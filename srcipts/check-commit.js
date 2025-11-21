@@ -41,7 +41,6 @@ async function runESLint() {
   console.log(`📋 使用 ESLint 检查 ${stagedFiles.length} 个文件...\n`)
 
   try {
-    // 使用 ESLint 命令行工具检查文件
     // 直接使用相对路径，ESLint 会在当前工作目录中查找
     // 在 zx 中，数组会自动展开为多个参数
     const eslintArgs = ['eslint', ...stagedFiles, '--format', 'stylish']
@@ -49,7 +48,7 @@ async function runESLint() {
     console.log('\n✅ ESLint 检查通过\n')
     return { success: true }
   } catch (error) {
-    // ESLint 发现错误时会退出并返回非0状态码
+   
     console.error('\n❌ ESLint 检查失败：发现语法错误或代码质量问题\n')
     console.log('💡 提示：请修复上述错误后重新提交\n')
     console.log('💡 可以使用 npm run lint:fix 自动修复一些问题\n')

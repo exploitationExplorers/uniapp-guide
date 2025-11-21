@@ -14,6 +14,9 @@ dist-ssr
 coverage
 *.local
 
+# Uniapp 构建产物
+unpackage
+
 /cypress/videos/
 /cypress/screenshots/
 
