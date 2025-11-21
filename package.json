@@ -1,0 +1,37 @@
+{
+    "name": "uniapp-guide",
+    "version": "1.0.16",
+    "description": "",
+    "main": "main.js",
+    "dependencies": {
+      "vconsole": "^3.15.1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "code-inspector-plugin": "^0.20.10"
+    },
+    "uni-app": {
+      "scripts": {
+        "mp-preciselocal": {
+          "title": "精准定位版本",
+          "env": {
+            "UNI_PLATFORM": "mp-weixin"
+          },
+          "define": {
+            "MP-PRECISELOCAL": true
+          }
+        },
+        "h5-preciselocal": {
+          "title": "h5环境",
+          "env": {
+            "UNI_PLATFORM": "h5"
+          },
+          "define": {
+            "MP-PRECISELOCAL": true
+          }
+        }
+      }
+    }
+  }
