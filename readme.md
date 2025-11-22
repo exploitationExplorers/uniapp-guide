@@ -2,4 +2,4 @@
 
 ## 👥 成员
 
-👤 -- Cong  -Xin -Jong ✨ 
+👤 -- Cong  -Xin -Jong -Bug -#✨ 
