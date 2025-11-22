@@ -1,17 +1,74 @@
 {
-	"pages": [ 
-		{
+	"pages": [{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/personalCenter/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/404/404",
+			"style": {
+				"navigationBarTitleText": "页面不存在"
+			}
+		},
+		{
+			"path": "pages/personalProfile/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/myAccountBook/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/groupStatistics/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/aboutUs/index",
+			"style": {
+				"navigationBarTitleText": ""
 			}
 		}
 	],
+	"uniIdRouter": {
+		"notFound": "pages/404/404"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#007AFF",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "/static/home.png",
+				"selectedIconPath": "/static/home.png"
+			},
+			{
+				"pagePath": "pages/personalCenter/index",
+				"text": "我的",
+				"iconPath": "/static/personalCenter.png",
+				"selectedIconPath": "/static/personalCenter.png"
+			}
+		]
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarBackgroundColor": "#fff",
+		"backgroundColor": "#1296DB"
 	},
 	"uniIdRouter": {}
 }
