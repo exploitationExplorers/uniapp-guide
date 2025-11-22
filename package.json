@@ -5,53 +5,55 @@
     "main": "main.js",
     "type": "module",
     "dependencies": {
-      "vconsole": "^3.15.1"
+        "vconsole": "^3.15.1"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-      "code-inspector-plugin": "^0.20.10",
-      "zx": "7.2.3",
-      "cz-git": "1.7.0",
-      "eslint": "^8.57.0",
-      "eslint-plugin-vue": "^9.23.0",
-      "@babel/eslint-parser": "^7.23.0",
-      "@babel/preset-env": "^7.23.0",
-      "husky": "^8.0.3",
-      "lint-staged": "^15.2.0"
+        "@babel/eslint-parser": "^7.23.0",
+        "@babel/preset-env": "^7.23.0",
+        "code-inspector-plugin": "^0.20.17",
+        "cz-git": "1.7.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-vue": "^9.23.0",
+        "husky": "^8.0.3",
+        "lint-staged": "^15.2.0",
+        "sass": "^1.94.2",
+        "sass-loader": "^16.0.6",
+        "zx": "7.2.3"
     },
     "scripts": {
-      "prepare": "husky install",
-      "lint": "eslint . --ext .js,.vue",
-      "lint:fix": "eslint . --ext .js,.vue --fix"
+        "prepare": "husky install",
+        "lint": "eslint . --ext .js,.vue",
+        "lint:fix": "eslint . --ext .js,.vue --fix"
     },
     "lint-staged": {
-      "*.{js,vue,ts}": [
-        "eslint --fix",
-        "git add"
-      ]
+        "*.{js,vue,ts}": [
+            "eslint --fix",
+            "git add"
+        ]
     },
     "uni-app": {
-      "scripts": {
-        "mp-preciselocal": {
-          "title": "精准定位版本",
-          "env": {
-            "UNI_PLATFORM": "mp-weixin"
-          },
-          "define": {
-            "MP-PRECISELOCAL": true
-          }
-        },
-        "h5-preciselocal": {
-          "title": "h5环境",
-          "env": {
-            "UNI_PLATFORM": "h5"
-          },
-          "define": {
-            "MP-PRECISELOCAL": true
-          }
+        "scripts": {
+            "mp-preciselocal": {
+                "title": "精准定位版本",
+                "env": {
+                    "UNI_PLATFORM": "mp-weixin"
+                },
+                "define": {
+                    "MP-PRECISELOCAL": true
+                }
+            },
+            "h5-preciselocal": {
+                "title": "h5环境",
+                "env": {
+                    "UNI_PLATFORM": "h5"
+                },
+                "define": {
+                    "MP-PRECISELOCAL": true
+                }
+            }
         }
-      }
     }
-  }
+}

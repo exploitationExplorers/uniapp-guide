@@ -1,8 +1,23 @@
 <template>
 	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
-		<view class="text-area">
-			<text class="title">{{title}}</text>
+		<image class="index-background" src="/static/pic_01.webp"></image>
+		<view class="total-data">
+			<view class="items">
+				<text>总团量</text>
+				<text>100</text>
+			</view>
+			<view class="items">
+				<text>今年收入</text>
+				<text>0</text>
+			</view>
+			<view class="items">
+				<text>总收入</text>
+				<text>0</text>
+			</view>
+			<view class="items">
+				<text>本月收入</text>
+				<text>0</text>
+			</view>
 		</view>
 	</view>
 </template>
@@ -23,30 +38,52 @@
 	}
 </script>
 
-<style>
+<style scoped scss>
 	.content {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-	}
+		flex-wrap: wrap;
 
-	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin-top: 200rpx;
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 50rpx;
-	}
+		.index-background {
+			width: 100%;
+			height: 400rpx;
+			filter: blur(3px);
+		}
 
-	.text-area {
-		display: flex;
-		justify-content: center;
-	}
+		.text-area {
+			width: 100%;
+		}
 
-	.title {
-		font-size: 36rpx;
-		color: #8f8f94;
+		.total-data {
+			position: absolute;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 85%;
+			height: 100%;
+
+			.items:nth-child(odd) {
+				text {
+					text-align: left;
+				}
+
+			}
+
+			.items {
+				width: calc(100% /2);
+				color: #fff;
+
+				text {
+					display: block;
+					text-align: right;
+				}
+			}
+		}
 	}
 </style>
