@@ -26,13 +26,19 @@
 		{
 			"path": "pages/myAccountBook/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "我的账本"
 			}
 		},
 		{
 			"path": "pages/myAccountBook/revenue_details",
 			"style": {
 				"navigationBarTitleText": "财务统计"
+			}
+		},
+		{
+			"path": "pages/myAccountBook/details",
+			"style": {
+				"navigationBarTitleText": "自费返佣"
 			}
 		},
 		{
