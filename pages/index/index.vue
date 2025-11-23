@@ -2,21 +2,26 @@
 	<view class="content">
 		<image class="index-background" src="/static/pic_01.webp"></image>
 		<view class="total-data">
-			<view class="items">
-				<text>总团量</text>
-				<text>100</text>
+			<view class="lefts">
+				<view class="items">
+					<text>总团量</text>
+					<text>{{dataObj.team_size}}</text>
+				</view>
+				<view class="items">
+					<text>总收入</text>
+					<text>{{dataObj.income}}</text>
+				</view>
 			</view>
-			<view class="items">
-				<text>今年收入</text>
-				<text>0</text>
-			</view>
-			<view class="items">
-				<text>总收入</text>
-				<text>0</text>
-			</view>
-			<view class="items">
-				<text>本月收入</text>
-				<text>0</text>
+			<view class="right">
+				<view class="items">
+					<text>今年收入</text>
+					<text>{{dataObj.revenue}}</text>
+				</view>
+				<view class="items">
+					<text>本月收入</text>
+					<text>{{dataObj.month_income}}</text>
+				</view>
+
 			</view>
 		</view>
 	</view>
@@ -26,11 +31,19 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello'
+				title: 'Hello',
+				dataObj: {}
 			}
 		},
 		onLoad() {
-
+			uni.request({
+				url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
+				method: 'POST',
+				data: {},
+				success: (res) => {
+					this.dataObj = res.data
+				}
+			});
 		},
 		methods: {
 
@@ -67,21 +80,29 @@
 			transform: translate(-50%, -50%);
 			width: 85%;
 			height: 100%;
-
-			.items:nth-child(odd) {
-				text {
-					text-align: left;
-				}
-
+			
+			text{
+				color: #fff;
+				display: block;
 			}
 
-			.items {
-				width: calc(100% /2);
-				color: #fff;
+			.lefts {
+				width: 77%;
+
+				.items:nth-child(n+2) {
+					margin-top: 60rpx;
+				}
+			}
+
+			.right {
+				flex: 1;
+
+				.items:nth-child(n+2) {
+					margin-top: 60rpx;
+				}
 
 				text {
-					display: block;
-					text-align: right;
+					display: inline-block;
 				}
 			}
 		}

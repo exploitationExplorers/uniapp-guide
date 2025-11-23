@@ -69,6 +69,5 @@
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#fff",
 		"backgroundColor": "#1296DB"
-	},
-	"uniIdRouter": {}
+	}
 }
