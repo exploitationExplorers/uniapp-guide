@@ -12,7 +12,8 @@
 			</view>
 		</view>
 		<view class="personalCenterLink">
-			<view class="linkList" v-for="(item,index) in addres" :key="index" @click="linkRedirection(item.url)">
+			<view class="linkList" v-for="(item,index) in addres" :key="index"
+				@click="linkRedirection(item.url,item.key)">
 				<image class="images" :src="item.icon" mode=""></image>
 				<text>{{item.key}}</text>
 			</view>
@@ -54,17 +55,39 @@
 			}
 		},
 		methods: {
-			linkRedirection(val) {
-				if (!val) return;
-				uni.navigateTo({
-					url: val,
-					fail: (err) => {
-						console.log('跳转失败:', err)
-						uni.navigateTo({
-							url: '/pages/404/404'
-						})
-					}
-				})
+			linkRedirection(val, item) {
+				if (!val) {
+					uni.showModal({
+						title: '',
+						content: '确定注销当前登录账号吗？',
+						success: (res) => {
+							if (res.confirm) {
+								console.log('用户点击确定')
+								// uni.request({
+								// 	url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
+								// 	method: 'POST',
+								// 	data: {},
+								// 	success: (res) => {
+								// 		this.dataObj = res.data
+								// 	}
+								// });
+							} else if (res.cancel) {
+								console.log('用户点击取消')
+							}
+						}
+					})
+				} else {
+					uni.navigateTo({
+						url: val,
+						fail: (err) => {
+							console.log('跳转失败:', err)
+							uni.navigateTo({
+								url: '/pages/404/404'
+							})
+						}
+					})
+				}
+
 			}
 		}
 	}

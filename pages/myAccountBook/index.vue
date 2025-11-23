@@ -1,11 +1,12 @@
 <template>
 	<view>
 		<view class="flex-row">
-			<view class="travel-agency" @click="togglePickerData">
+			<view :class="{'time': true, 'active': actives2}" @click="togglePickerData">
 				<text>旅行社</text>
 			</view>
-			<view class="time" @click="togglePickerTime">
-				<text>时间</text>
+			<view :class="{'time': true, 'active': actives}" @click="togglePickerTime">
+				<text v-if="showActive">{{selectedDate}}</text>
+				<text v-else>时间</text>
 			</view>
 			<view class="picker-container" v-if="visible">
 				<picker-view :indicator-style="indicatorStyle" :value="value" @change="bindChange" class="picker-view">
@@ -35,29 +36,29 @@
 			<view class="content-flex">
 				<view class="datas">
 					<text>现付总额</text>
-					<text>0</text>
+					<text>{{particular['cashPaymentTotal ']}}</text>
 				</view>
 				<view class="datas">
 					<text>收入总额</text>
-					<text>0</text>
+					<text>{{particular['incomeTotal ']}}</text>
 				</view>
 				<view class="datas">
 					<text>交回总额</text>
-					<text>0</text>
+					<text>{{particular['returnTotal ']}}</text>
 				</view>
 			</view>
 			<view class="settlement-amount">
 				<text>结账总额</text>
-				<text>0</text>
+				<text>{{particular['settlementTotal ']}}</text>
 			</view>
 			<view class="paid">
 				<view class="lists">
 					<text>已结账</text>
-					<text>0</text>
+					<text>{{particular['settledAmount ']}}</text>
 				</view>
 				<view class="lists">
 					<text>未结账</text>
-					<text>0</text>
+					<text>{{particular['outstandingAmount ']}}</text>
 				</view>
 			</view>
 		</view>
@@ -114,6 +115,11 @@
 </template>
 
 <script>
+	import {
+		getTravelAgencies,
+		getLedgerList,
+		getLedgerDetails
+	} from '../../request/api/index.js'
 	export default {
 		data() {
 			const date = new Date()
@@ -122,39 +128,15 @@
 			const year = date.getFullYear()
 			const months = []
 			const dataObj = []
+			const actives2 = false
+			const actives = false
+			const showActive = false
 			const month = date.getMonth() + 1
 			const days = []
-			const dataLists = [{
-					tourist_destination: "四川九寨沟",
-					team_number: "001-20181231-T-006",
-					time_start: "2018-12-30",
-					time_end: "2018-12-31",
-					source: "火柴头客户测试用版1",
-					received_cash: "9527.98",
-					personal_income: "157",
-					return_amount: "5639",
-					received_amount: "4827",
-					settlement_amount: "135",
-					settled_amount: "4828",
-					outstanding_amount: "9978",
-					id: 1,
-				},
-				{
-					tourist_destination: "四川理小路",
-					team_number: "001-20181231-T-006",
-					time_start: "2018-12-30",
-					time_end: "2018-12-31",
-					source: "火柴头客户测试用版1",
-					received_cash: "9527.98",
-					personal_income: "157",
-					return_amount: "5639",
-					received_amount: "4827",
-					settlement_amount: "135",
-					settled_amount: "4828",
-					outstanding_amount: "9978",
-					id: 2,
-				}
-			]
+			const selectedDate = ""
+			const global_name = ""
+			const particular = {}
+			const dataLists = []
 			const day = date.getDate()
 			for (let i = 1990; i <= date.getFullYear(); i++) {
 				years.push(i)
@@ -172,9 +154,15 @@
 				year,
 				dataLists,
 				month,
+				particular,
+				showData,
 				showData,
 				day,
+				actives2,
+				actives,
+				global_name,
 				dataObj,
+				showActive,
 				value: [years.length - 1, month - 1, day - 1],
 				visible: false,
 				indicatorStyle: `height: 50px;`,
@@ -197,41 +185,77 @@
 			togglePickerData() {
 				this.showData = !this.showData
 				this.visible = false
+				this.actives2 = !this.actives2
 			},
 
 			togglePickerTime() {
 				this.visible = !this.visible
 				this.showData = false
+				this.actives = true
 			},
-			toggleData(val) {
+			async toggleData(val) {
+				this.actives2 = !this.actives2
 				this.showData = false
+				this.global_name = val
+				const time = this.year + '-' + this.month + '-' + this.day
+				const params = {
+					name: val,
+					timeStart: time
+				}
+				const datas = await getLedgerList(params)
+				this.dataLists = datas
+				const cleanedParticulars =await getLedgerDetails(params);
+				this.particular = cleanedParticulars
 			},
 
-			confirmPicker() {
+			async confirmPicker() {
 				this.visible = false
-				this.updateSelectedDate()
+				const time = this.year + '-' + this.month + '-' + this.day
+				this.selectedDate = time
+				this.showActive = true
+				const params = {
+					name: this.global_name,
+					timeStart: time
+				}
+				const datas = await getLedgerList(params)
+				this.dataLists = datas
+				const cleanedParticulars =await getLedgerDetails(params);
+				this.particular = cleanedParticulars
 			},
 			linkUrl(value) {
+				const urls = `/pages/myAccountBook/revenue_details?id=${value}`
 				uni.navigateTo({
-					url: '/pages/myAccountBook/revenue_details',
+					url: urls,
 					animationType: 'slide-in-right',
 					animationDuration: 300,
 					success: () => {
 						console.log('跳转成功')
 					}
 				})
+			},
+			trimKeys(obj) {
+				const result = {};
+				for (const key in obj) {
+					if (obj.hasOwnProperty(key)) {
+						const cleanKey = key.trim();
+						result[cleanKey] = obj[key];
+					}
+				}
+				return result;
 			}
 
 		},
-		onLoad() {
-			uni.request({
-				url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/data',
-				method: 'POST',
-				data: {},
-				success: (res) => {
-					this.dataObj = res.data
-				}
-			});
+		async onLoad() {
+			const res = await getTravelAgencies();
+			this.dataObj = res;
+			const params = {
+				name: "",
+				timeStart: "",
+			}
+			const datas = await getLedgerList(params)
+			this.dataLists = datas
+			const cleanedParticulars =await getLedgerDetails(this.trimKeys(params));
+			this.particular = cleanedParticulars
 		},
 	}
 </script>
@@ -369,6 +393,7 @@
 		align-items: center;
 		width: 100%;
 		background: #fff;
+		z-index: 99;
 		position: relative;
 		border-bottom: 1rpx solid #eee;
 	}
@@ -389,6 +414,10 @@
 		display: inline-block;
 		padding-right: 40rpx;
 		position: relative;
+	}
+
+	.time.active {
+		color: #E99E5A;
 	}
 
 	.time text::after {

@@ -9,11 +9,14 @@
 	export default {
 		data() {
 			return {
-				detailsMoney: 9527,
+				detailsMoney: "",
 			}
 		},
 		methods: {
 		
+		},
+		onLoad(val){
+			this.detailsMoney = val.number
 		}
 	}
 </script>
