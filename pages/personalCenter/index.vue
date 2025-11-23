@@ -70,7 +70,7 @@
 	}
 </script>
 
-<style scoped scss>
+<style scoped lang="scss">
 	.linkList::before {
 		content: "";
 		display: block;

@@ -30,6 +30,12 @@
 			}
 		},
 		{
+			"path": "pages/myAccountBook/revenue_details",
+			"style": {
+				"navigationBarTitleText": "财务统计"
+			}
+		},
+		{
 			"path": "pages/groupStatistics/index",
 			"style": {
 				"navigationBarTitleText": ""

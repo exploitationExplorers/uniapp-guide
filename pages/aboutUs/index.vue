@@ -60,11 +60,7 @@
 	}
 </script>
 
-<style scoped scss>
-	uni-modal .uni-modal {
-		border-radius: 60rpx !important;
-	}
-
+<style scoped lang="scss">
 	.about-logo {
 		width: 100%;
 		background-color: #F6F6F6;
@@ -72,36 +68,33 @@
 		padding: 50px 0;
 		justify-content: center;
 		align-items: center;
-
-		.logo_images {
-			width: 160rpx;
-			height: 160rpx;
-		}
 	}
 
-	.dataList {
-		.item {
-			padding: 30rpx 20rpx;
-			border-bottom: 1px solid #eee;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
+	.logo_images {
+		width: 160rpx;
+		height: 160rpx;
+	}
 
-			text:nth-child(1) {
-				font-size: 30rpx;
-				display: block;
-				color: 111;
-				width: auto;
-				max-width: 50%;
-			}
+	.dataList .item {
+		padding: 30rpx 20rpx;
+		border-bottom: 1px solid #eee;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-			text:nth-child(2) {
-				color: #A5A9AB;
-				display: block;
-				font-size: 30rpx;
-				flex: 1;
-				text-align: right;
-			}
-		}
+	.dataList .item text:nth-child(1) {
+		font-size: 30rpx;
+		display: block;
+		color: #111;
+		width: auto;
+		max-width: 50%;
+	}
+
+	.dataList .item text:nth-child(2) {
+		color: #A5A9AB;
+		display: block;
+		font-size: 30rpx;
+		text-align: right;
 	}
 </style>

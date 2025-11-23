@@ -51,7 +51,7 @@
 	}
 </script>
 
-<style scoped scss>
+<style scoped lang="scss">
 	.content {
 		position: relative;
 		width: 100%;
