@@ -13,7 +13,7 @@
 		<view class="details">
 			<view class="lists">
 				<view v-for="(item,index) in dataList" :key="index" @click="navLink()">
-					<view class="lists_header">
+					<view class="lists_header" @click="toggleList">
 						<text class="tit">{{item.title}}</text>
 						<text class="num">0</text>
 					</view>
@@ -127,6 +127,9 @@
 			}
 		},
 		methods: {
+			toggleList(){
+				console.log(123)
+			},
 			navLink() {
 				uni.navigateTo({
 					url: '/pages/myAccountBook/details',

@@ -11,9 +11,9 @@
 			return {
 				detailsMoney: 9527,
 			}
-			{
-                 
-			}
+		},
+		methods: {
+		
 		}
 	}
 </script>
@@ -24,10 +24,12 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 16rpx 20rpx;
-		>text:nth-child(1){
+
+		>text:nth-child(1) {
 			color: #909297;
 		}
-		>text:nth-child(2){
+
+		>text:nth-child(2) {
 			color: #E09B6C;
 		}
 	}
