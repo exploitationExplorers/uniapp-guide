@@ -50,7 +50,9 @@
 		{
 			"path": "pages/aboutUs/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "关于",
+				"navigationBarTextStyle": "white",
+				"navigationBarBackgroundColor": "#29b6f6"
 			}
 		},
 		{
@@ -76,34 +78,49 @@
       "style": {
         "navigationBarTitleText": "忘记密码"
       }
+    },
+    {
+      "path": "pages/featureIntro/index",
+      "style": {
+        "navigationBarTitleText": "功能介绍"
+      }
+    },
+    {
+      "path": "pages/changePassword/index",
+      "style": {
+        "navigationBarTitleText": "修改密码",
+        "navigationBarBackgroundColor": "#1296DB",
+        "navigationBarTextStyle": "white"
+      }
     }
-	],
-	"uniIdRouter": {
-		"notFound": "pages/404/404"
-	},
-	"tabBar": {
-		"color": "#999999",
-		"selectedColor": "#007AFF",
-		"backgroundColor": "#FFFFFF",
-		"borderStyle": "black",
-		"list": [{
-				"pagePath": "pages/index/index",
-				"text": "首页",
-				"iconPath": "/static/home.png",
-				"selectedIconPath": "/static/home.png"
-			},
-			{
-				"pagePath": "pages/personalCenter/index",
-				"text": "我的",
-				"iconPath": "/static/personalCenter.png",
-				"selectedIconPath": "/static/personalCenter.png"
-			}
-		]
-	},
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#fff",
-		"backgroundColor": "#1296DB"
-	}
+  ],
+  "uniIdRouter": {
+    "notFound": "pages/404/404"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "/static/home.png",
+        "selectedIconPath": "/static/home.png"
+      },
+      {
+        "pagePath": "pages/personalCenter/index",
+        "text": "我的",
+        "iconPath": "/static/personalCenter.png",
+        "selectedIconPath": "/static/personalCenter.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#fff",
+    "backgroundColor": "#1296DB"
+  }
 }
