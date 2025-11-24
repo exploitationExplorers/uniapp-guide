@@ -104,10 +104,9 @@ export default {
   methods: {
     // 处理开始使用按钮点击事件
     handleStart() {
-      // 使用reLaunch关闭所有页面，打开到应用内的某个页面
-      // 导航到首页
+      // 导航到登录页面
       uni.navigateTo({
-        url: "/pages/index/index",
+        url: "/pages/login/index",
       });
     },
   },
