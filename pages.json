@@ -26,7 +26,19 @@
 		{
 			"path": "pages/myAccountBook/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "我的账本"
+			}
+		},
+		{
+			"path": "pages/myAccountBook/revenue_details",
+			"style": {
+				"navigationBarTitleText": "财务统计"
+			}
+		},
+		{
+			"path": "pages/myAccountBook/details",
+			"style": {
+				"navigationBarTitleText": "自费返佣"
 			}
 		},
 		{
@@ -37,6 +49,12 @@
 		},
 		{
 			"path": "pages/aboutUs/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/takePhoto/index",
 			"style": {
 				"navigationBarTitleText": ""
 			}
@@ -69,6 +87,5 @@
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#fff",
 		"backgroundColor": "#1296DB"
-	},
-	"uniIdRouter": {}
+	}
 }

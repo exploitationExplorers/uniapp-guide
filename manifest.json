@@ -49,13 +49,21 @@
     /* 快应用特有相关 */
     "quickapp" : {},
     /* 小程序特有相关 */
-    "mp-weixin" : {
-        "appid" : "",
-        "setting" : {
-            "urlCheck" : false
-        },
-        "usingComponents" : true
+    "mp-weixin": {
+  "appid": "",
+  "setting": {
+    "urlCheck": false
+  },
+  "usingComponents": true,
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于在照片上添加地理位置水印（如经度、纬度）"
     },
+    "scope.writePhotosAlbum": {
+      "desc": "用于将带水印的照片保存到手机相册"
+    }
+  }
+},
     "mp-alipay" : {
         "usingComponents" : true
     },
