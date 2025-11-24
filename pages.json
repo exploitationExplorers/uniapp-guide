@@ -84,6 +84,14 @@
       "style": {
         "navigationBarTitleText": "功能介绍"
       }
+    },
+    {
+      "path": "pages/changePassword/index",
+      "style": {
+        "navigationBarTitleText": "修改密码",
+        "navigationBarBackgroundColor": "#1296DB",
+        "navigationBarTextStyle": "white"
+      }
     }
   ],
   "uniIdRouter": {
