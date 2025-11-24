@@ -1,100 +1,105 @@
 <template>
-	<view>
-		<view class="about-logo">
-			<image class="logo_images" src="/static/pic_08.png" mode=""></image>
-		</view>
-		<view class="dataList">
-			<view class="item">
-				<text>当前版本</text>
-				<text>{{Vnumber}}</text>
-			</view>
-			<view class="item" @click="clearCache">
-				<text>清空缓存</text>
-				<text>{{Cnumber}}</text>
-			</view>
-			<view class="item" @click="serviceClick">
-				<text>当前服务节点</text>
-				<text>{{Snode}}</text>
-			</view>
-		</view>
-	</view>
+  <view class="container">
+
+    <!-- Logo -->
+    <view class="logo-box">
+      <image class="logo-img" src="/static/about.png"></image>
+    </view>
+
+    <!-- 内容列表 -->
+    <view class="list-box">
+
+      <!-- 当前版本 -->
+      <view class="list-item">
+        <text class="item-title">当前版本</text>
+        <text class="item-value">{{ currentVersion }}</text>
+      </view>
+
+      <!-- 清空缓存 -->
+      <view class="list-item" @click="clearCache">
+        <text class="item-title">清空缓存</text>
+        <text class="item-value">{{ cacheSize }}</text>
+      </view>
+
+      <!-- 当前服务器节点 -->
+      <view class="list-item">
+        <text class="item-title">当前服务器节点</text>
+        <text class="item-value">{{ nodeServer }}</text>
+      </view>
+
+    </view>
+
+  </view>
 </template>
 
 <script>
-	export default {
-		data() {
-			return {
-				Vnumber: "v4.1.1",
-				Cnumber: "10.11KB",
-				Snode: "默认服务器",
-			}
-		},
-		methods: {
-			clearCache() {
-				uni.showModal({
-					title: '',
-					content: '确定清楚缓存？',
-					success: (res) => {
-						if (res.confirm) {
-							console.log('用户点击确定')
-						} else if (res.cancel) {
-							console.log('用户点击取消')
-						}
+export default {
+  data() {
+    return {
+      cacheSize: '10.11KB',
+			currentVersion: 'v4.1.1',
+			nodeServer: '默认服务器节点'
+    }
+  },
+  methods: {
+    goBack() {
+      uni.navigateBack()
+    },
+    clearCache() {
+			uni.showModal({
+				title: '温馨提示',
+				content: '您确定要执行此操作吗？数据删除后将无法恢复。',
+				showCancel: true,
+				cancelText: '取消',
+				confirmText: '确定',
+				success: (res) => {
+					if (res.confirm) {
+						uni.showToast({
+							title: '操作成功',
+							icon: 'success',
+						})
+						this.cacheSize = '0KB'
 					}
-				})
-			},
-			serviceClick() {
-				uni.showModal({
-					title: '需要切换服务器节点？',
-					content: '当前连接服务器节点为：默认服务器节点切换服务器节点需要先,退出登录，然后在登录前选择服务器节点进行切换。',
-					success: (res) => {
-						if (res.confirm) {
-							console.log('用户点击确定')
-						} else if (res.cancel) {
-							console.log('用户点击取消')
-						}
-					}
-				})
-			}
-		}
-	}
+				}
+			});
+    }
+  }
+}
 </script>
 
-<style scoped lang="scss">
-	.about-logo {
-		width: 100%;
-		background-color: #F6F6F6;
-		display: flex;
-		padding: 50px 0;
-		justify-content: center;
-		align-items: center;
-	}
+<style>
+.container {
+  background: #ffffff;
+  min-height: 100vh;
+}
 
-	.logo_images {
-		width: 160rpx;
-		height: 160rpx;
-	}
+.logo-box {
+  display: flex;
+  justify-content: center;
+  background-color: #f6f6f6;
+}
 
-	.dataList .item {
-		padding: 30rpx 20rpx;
-		border-bottom: 1px solid #eee;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
+.logo-img {
+  width: 300rpx;
+  height: 300rpx;
+}
 
-	.dataList .item text:nth-child(1) {
-		font-size: 30rpx;
-		display: block;
-		color: #111;
-		width: auto;
-		max-width: 50%;
-	}
+.list-item {
+  height: 100rpx;
+  padding: 0 30rpx;
+  border-bottom: 1px solid #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-	.dataList .item text:nth-child(2) {
-		color: #A5A9AB;
-		display: block;
-		font-size: 30rpx;
-		text-align: right;
-	}
+.item-title {
+  color: #000;
+  font-size: 30rpx;
+}
+
+.item-value {
+  color: #999;
+  font-size: 28rpx;
+}
 </style>
