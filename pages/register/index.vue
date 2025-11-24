@@ -20,7 +20,13 @@
           type="number"
           placeholder="请输入验证码"
           v-model="form.code" />
-        <view class="verify-btn" @click="getCode">获取验证码</view>
+        <!-- 修改为动态文本和禁用样式 -->
+        <view
+          class="verify-btn"
+          :class="{ disabled: isCounting }"
+          @click="getCode">
+          {{ verifyBtnText }}
+        </view>
       </view>
 
       <!-- 登录密码 -->
@@ -86,20 +92,129 @@ export default {
         name: "",
       },
       agreed: false,
+      timer: null,
+      countdown: 60,
+      isCounting: false,
     };
+  },
+  computed: {
+    verifyBtnText() {
+      return this.isCounting ? `${this.countdown}s后重发` : "获取验证码";
+    },
+  },
+  onUnload() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   },
   methods: {
     getCode() {
-      uni.showToast({ title: "验证码已发送", icon: "none" });
+      if (this.isCounting) return;
+
+      if (!this.form.phone) {
+        return uni.showToast({ title: "请输入手机号", icon: "none" });
+      }
+
+      const phoneReg = /^1[3-9]\d{9}$/;
+      if (!phoneReg.test(this.form.phone)) {
+        return uni.showToast({ title: "手机号格式不正确", icon: "none" });
+      }
+
+      uni.request({
+        url: getApp().globalData.baseUrl + "/api/getCode",
+        data: { phone: this.form.phone },
+        method: "GET",
+        success: (res) => {
+          if (res.data && res.data.success) {
+            this.form.code = res.data.message;
+            uni.showToast({ title: "验证码已发送", icon: "none" });
+
+            this.isCounting = true;
+            this.countdown = 60;
+            this.timer = setInterval(() => {
+              this.countdown--;
+              if (this.countdown <= 0) {
+                clearInterval(this.timer);
+                this.timer = null;
+                this.isCounting = false;
+                this.countdown = 60;
+              }
+            }, 1000);
+          } else {
+            uni.showToast({
+              title: res.data.message || "获取验证码失败",
+              icon: "none",
+            });
+          }
+        },
+        fail: () => {
+          uni.showToast({ title: "网络请求失败", icon: "none" });
+        },
+      });
     },
     checkboxChange(e) {
       this.agreed = e.detail.value.includes("agreed");
     },
     handleRegister() {
+      // 1. 协议校验
       if (!this.agreed) {
         return uni.showToast({ title: "请先同意使用条款", icon: "none" });
       }
-      uni.showToast({ title: "注册提交", icon: "none" });
+
+      const { phone, code, password, confirmPassword, name } = this.form;
+
+      // 2. 必填项校验
+      if (!phone) return uni.showToast({ title: "请输入手机号", icon: "none" });
+      if (!code) return uni.showToast({ title: "请输入验证码", icon: "none" });
+      if (!password)
+        return uni.showToast({ title: "请输入登录密码", icon: "none" });
+      if (!confirmPassword)
+        return uni.showToast({ title: "请输入确认密码", icon: "none" });
+      if (!name) return uni.showToast({ title: "请输入姓名", icon: "none" });
+
+      // 3. 格式与逻辑校验
+      const phoneReg = /^1[3-9]\d{9}$/;
+      if (!phoneReg.test(phone)) {
+        return uni.showToast({ title: "手机号格式不正确", icon: "none" });
+      }
+
+      if (password !== confirmPassword) {
+        return uni.showToast({ title: "两次输入的密码不一致", icon: "none" });
+      }
+
+      // 4. 发起请求
+      uni.showLoading({ title: "注册中..." });
+
+      uni.request({
+        url: getApp().globalData.baseUrl + "/api/register",
+        method: "POST",
+        data: {
+          phone,
+          code,
+          password,
+          name,
+        },
+        success: (res) => {
+          uni.hideLoading();
+          if (res.data && res.data.success) {
+            uni.showToast({ title: "注册成功", icon: "success" });
+            // 延迟跳转回登录页
+            setTimeout(() => {
+              uni.navigateBack();
+            }, 1500);
+          } else {
+            uni.showToast({
+              title: res.data.message || "注册失败",
+              icon: "none",
+            });
+          }
+        },
+        fail: (error) => {
+          uni.hideLoading();
+          uni.showToast({ title: "网络请求失败", icon: "none" });
+        },
+      });
     },
   },
 };
@@ -141,6 +256,14 @@ export default {
   font-size: 24rpx;
   padding: 10rpx 20rpx;
   border-radius: 4rpx;
+  min-width: 140rpx; /* 固定最小宽度防止文字跳动 */
+  text-align: center;
+}
+
+/* 禁用状态样式 */
+.verify-btn.disabled {
+  background-color: #f5f5f5;
+  color: #999;
 }
 
 .agreement-box {

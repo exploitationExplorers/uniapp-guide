@@ -131,8 +131,54 @@ export default {
     togglePassword() {
       this.showPassword = !this.showPassword;
     },
-    handleLogin() {
-      uni.showToast({ title: "点击了登录", icon: "none" });
+    async handleLogin() {
+      // 手机号为空
+      if (!this.phone) {
+        return uni.showToast({
+          title: "请输入手机号",
+          icon: "none",
+        });
+      }
+
+      // 校验手机号格式（非必填逻辑可选）
+      const phoneReg = /^1[3-9]\d{9}$/;
+      if (!phoneReg.test(this.phone)) {
+        return uni.showToast({
+          title: "手机号格式不正确",
+          icon: "none",
+        });
+      }
+
+      // 密码为空
+      if (!this.password) {
+        return uni.showToast({
+          title: "请输入密码",
+          icon: "none",
+        });
+      }
+
+      // 密码校验（可选，例如长度 > 6）
+      if (this.password.length < 6) {
+        return uni.showToast({
+          title: "密码不能少于6位",
+          icon: "none",
+        });
+      }
+
+      if (this.phone && this.password) {
+        let res = await uni.request({
+          url: getApp().globalData.baseUrl + "/api/login",
+          data: { phone: this.phone, password: this.password },
+          method: "POST",
+        });
+        if (res.data.success) {
+          getApp().globalData.userInfo = res.data.userInfo;
+          getApp().globalData.token = res.data.token;
+          uni.navigateTo({
+            url: "/pages/index/index",
+          });
+        }
+      }
     },
     goToRegister() {
       uni.navigateTo({ url: "/pages/register/index" });
