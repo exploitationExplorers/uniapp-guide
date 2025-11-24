@@ -3,7 +3,7 @@
     "version": "1.0.16",
     "description": "",
     "main": "main.js",
-    "type": "commonjs",
+    "type": "module",
     "keywords": [],
     "author": "",
     "license": "ISC",
