@@ -59,15 +59,15 @@
 		display: flex;
 		flex-wrap: wrap;
 
-		.index-background {
-			width: 100%;
-			height: 400rpx;
-			filter: blur(3px);
-		}
+  .index-background {
+    width: 100%;
+    height: 400rpx;
+    filter: blur(3px);
+  }
 
-		.text-area {
-			width: 100%;
-		}
+  .text-area {
+    width: 100%;
+  }
 
 		.total-data {
 			position: absolute;

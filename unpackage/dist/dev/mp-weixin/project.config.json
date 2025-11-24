@@ -13,7 +13,11 @@
   },
   "compileType": "miniprogram",
   "libVersion": "",
+<<<<<<< HEAD
   "appid": "touristappid",
+=======
+  "appid": "wxbb29d5a93e54ab02",
+>>>>>>> local_dev_bug
   "projectname": "uniapp-project",
   "condition": {
     "search": {
