@@ -69,9 +69,10 @@
 		},
 		async onLoad() {
 			const app = getApp()
-			const token = app.globalData.token
-			if(!token){
-				return uni.navigateTo({ url: '/pages/featureIntro/index' })
+			if (!app.globalData.token) {
+				uni.redirectTo({
+					url: '/pages/login/index'
+				});
 			}
 			uni.request({
 				url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
@@ -198,15 +199,15 @@
 		display: flex;
 		flex-wrap: wrap;
 
-  .index-background {
-    width: 100%;
-    height: 400rpx;
-    filter: blur(3px);
-  }
+		.index-background {
+			width: 100%;
+			height: 400rpx;
+			filter: blur(3px);
+		}
 
-  .text-area {
-    width: 100%;
-  }
+		.text-area {
+			width: 100%;
+		}
 
 		.total-data {
 			position: absolute;
