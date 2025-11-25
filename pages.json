@@ -44,7 +44,7 @@
 		{
 			"path": "pages/groupStatistics/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "我的带团"
 			}
 		},
 		{
