@@ -27,7 +27,6 @@
 			</view>
 		</view>
 
-
 		<!-- 列表 -->
 		<view class="list">
 			<view class="listRow" v-for="(item,index) in arrayList" :key="index">
@@ -69,11 +68,11 @@
 		},
 		async onLoad() {
 			const app = getApp()
-			if (!app.globalData.token) {
-				uni.redirectTo({
-					url: '/pages/login/index'
-				});
-			}
+			// if (!app.globalData.token) {
+			// 	uni.redirectTo({
+			// 		url: '/pages/login/index'
+			// 	});
+			// }
 			uni.request({
 				url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
 				method: 'POST',
@@ -95,7 +94,11 @@
 			});
 		},
 		methods: {
-
+              link(){
+				  uni.navigateTo({
+				  	url:"/pages/takePhoto/index"
+				  })
+			  }
 		},
 		filters: {
 			toFixed(value, digits) {
