@@ -29,8 +29,6 @@
 			</view>
 		</view>
 
-
-
 		<view class="content">
 			<!-- 内容区域 -->
 			<view class="content-flex">
@@ -136,7 +134,7 @@
 			const selectedDate = ""
 			const global_name = ""
 			const particular = {}
-			const indicatorStyle =``
+			const indicatorStyle = ``
 			const dataLists = []
 			const day = date.getDate()
 			for (let i = 1990; i <= date.getFullYear(); i++) {
@@ -205,7 +203,7 @@
 				}
 				const datas = await getLedgerList(params)
 				this.dataLists = datas
-				const cleanedParticulars =await getLedgerDetails(params);
+				const cleanedParticulars = await getLedgerDetails(params);
 				this.particular = cleanedParticulars
 			},
 
@@ -220,7 +218,7 @@
 				}
 				const datas = await getLedgerList(params)
 				this.dataLists = datas
-				const cleanedParticulars =await getLedgerDetails(params);
+				const cleanedParticulars = await getLedgerDetails(params);
 				this.particular = cleanedParticulars
 			},
 			linkUrl(value) {
@@ -243,8 +241,7 @@
 					}
 				}
 				return result;
-			}
-
+			},
 		},
 		async onLoad() {
 			const res = await getTravelAgencies();
@@ -255,7 +252,7 @@
 			}
 			const datas = await getLedgerList(params)
 			this.dataLists = datas
-			const cleanedParticulars =await getLedgerDetails(this.trimKeys(params));
+			const cleanedParticulars = await getLedgerDetails(this.trimKeys(params));
 			this.particular = cleanedParticulars
 		},
 	}
@@ -394,6 +391,7 @@
 		align-items: center;
 		width: 100%;
 		background: #fff;
+		border-top: 1px solid #eee;
 		z-index: 99;
 		position: relative;
 		border-bottom: 1rpx solid #eee;
