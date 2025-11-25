@@ -136,6 +136,7 @@
 			const selectedDate = ""
 			const global_name = ""
 			const particular = {}
+			const indicatorStyle =``
 			const dataLists = []
 			const day = date.getDate()
 			for (let i = 1990; i <= date.getFullYear(); i++) {
