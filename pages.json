@@ -3,7 +3,8 @@
 			"path": "pages/index/index",
 			"style": {
 				"enablePullDownRefresh": false,
-				"onReachBottomDistance": 50
+				"onReachBottomDistance": 50,
+				"navigationBarTitleText": ""
 			}
 		},
 		{

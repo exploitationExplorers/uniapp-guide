@@ -87,6 +87,11 @@
 		async onLoad() {
 			const app = getApp()
 			const params1 = {}
+			// if(!app.globalData.token){
+			// 	uni.redirectTo({
+			// 		url:"/pages/featureIntro/index"
+			// 	})
+			// }
 			const res = await getIndex(params1)
 			if (res) {
 				this.dataObj = res
