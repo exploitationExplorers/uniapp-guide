@@ -1,8 +1,9 @@
 <template>
 	<view>
 		<view class="flex-row">
-			<view :class="{'time': true, 'active': actives2}" @click="togglePickerData">
-				<text>旅行社</text>
+			<view :class="{'time': true, 'active': showNames}" @click="togglePickerData">
+				<text v-if="showNames">{{global_name}}</text>
+				<text v-else>旅行社</text>
 			</view>
 			<view :class="{'time': true, 'active': actives}" @click="togglePickerTime">
 				<text v-if="showActive">{{selectedDate}}</text>
@@ -126,6 +127,7 @@
 			const year = date.getFullYear()
 			const months = []
 			const dataObj = []
+			const showNames = false
 			const actives2 = false
 			const actives = false
 			const showActive = false
@@ -148,7 +150,7 @@
 			      days.push(i)
 			    }
 			return {
-				years,
+				years,showNames,
 				months,
 				days,
 				year,
@@ -212,6 +214,7 @@
 				this.actives2 = !this.actives2
 				this.showData = false
 				this.global_name = val
+				this.showNames =true
 				const time = this.year + '-' + this.month + '-' + this.day
 				const params = {
 					name: val,
