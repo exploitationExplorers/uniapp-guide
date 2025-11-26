@@ -13,9 +13,10 @@ dist
 dist-ssr
 coverage
 *.local
-
+manifest.json
+project.config.json
 # Uniapp 构建产物
-unpackage\
+unpackage/
 
 /cypress/videos/
 /cypress/screenshots/
