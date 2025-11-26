@@ -57,12 +57,12 @@
 				"navigationBarBackgroundColor": "#29b6f6"
 			}
 		},
-		{
-			"path": "pages/takePhoto/index",
-			"style": {
-				"navigationBarTitleText": ""
-			}
-		},
+    {
+      "path": "pages/takePhoto/index",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
     {
       "path": "pages/login/index",
       "style": {

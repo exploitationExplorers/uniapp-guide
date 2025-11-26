@@ -1,20 +1,20 @@
-const BASE_URL = 'https://m1.apifoxmock.com/m1/5178036-4843222-default';
+const BASE_URL = getApp().globalData.baseUrl;
 function request(options) {
   return new Promise((resolve, reject) => {
     uni.request({
       url: BASE_URL + options.url,
-      method: options.method || 'GET',
+      method: options.method || "GET",
       data: options.data || {},
       header: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       success: (res) => {
         resolve(res.data);
       },
       fail: (err) => {
-        uni.showToast({ title: '网络请求失败', icon: 'none' });
+        uni.showToast({ title: "网络请求失败", icon: "none" });
         reject(err);
-      }
+      },
     });
   });
 }
@@ -23,7 +23,7 @@ function request(options) {
  * 获取旅行社列表
  */
 export function getTravelAgencies() {
-  return request({ url: '/api/data', method: 'POST', data: {} });
+  return request({ url: "/api/data", method: "POST", data: {} });
 }
 
 /**
@@ -31,9 +31,9 @@ export function getTravelAgencies() {
  */
 export function getLedgerList(params) {
   return request({
-    url: '/api/ledger',
-    method: 'POST',
-    data: params
+    url: "/api/ledger",
+    method: "POST",
+    data: params,
   });
 }
 /**
@@ -41,9 +41,9 @@ export function getLedgerList(params) {
  */
 export function getLedgerDetails(params) {
   return request({
-    url: '/api/ledgerdetails',
-    method: 'POST',
-    data: params
+    url: "/api/ledgerdetails",
+    method: "POST",
+    data: params,
   });
 }
 /**
@@ -51,9 +51,9 @@ export function getLedgerDetails(params) {
  */
 export function getStatistics(params) {
   return request({
-    url: '/api/financial/statistics',
-    method: 'POST',
-    data: params
+    url: "/api/financial/statistics",
+    method: "POST",
+    data: params,
   });
 }
 /**
@@ -61,9 +61,9 @@ export function getStatistics(params) {
  */
 export function getIndex(params) {
   return request({
-    url: '/api/total',
-    method: 'POST',
-    data: params
+    url: "/api/total",
+    method: "POST",
+    data: params,
   });
 }
 /**
