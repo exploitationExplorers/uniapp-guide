@@ -22,15 +22,13 @@
 						<text>本月收入</text>
 						<text>{{dataObj.month_income}}元</text>
 					</view>
-
 				</view>
 			</view>
 		</view>
 
-
 		<!-- 列表 -->
 		<view class="list">
-			<view class="listRow" v-for="(item,index) in arrayList" :key="index">
+			<view class="listRow" v-for="(item,index) in displayList" :key="index">
 				<view :class="['left',item.code == 1 ? 'active' : 'notActive']">
 					<text v-if="item.code == 1">已完团</text>
 					<text v-else>未完团</text>
@@ -52,36 +50,49 @@
 					<view class="monet">收入：{{item.earnings | toFixed(1)}}元</view>
 				</view>
 			</view>
+			<view class="load-more-btn" v-if="hasMore && displayList.length > 0" @click="loadMoreData">
+				<text>加载更多</text>
+			</view>
+
+			<view class="load-more">
+				<text v-if="!hasMore && displayList.length > 0">没有更多数据了</text>
+				<text v-if="displayList.length === 0">暂无数据</text>
+			</view>
 		</view>
-
-
 	</view>
 </template>
 
 <script>
+	import {
+		getIndex,
+		getIndexList
+	} from '@/request/api/index.js'
 	export default {
 		data() {
 			return {
 				title: 'Hello',
 				dataObj: {},
-				arrayList: []
+				arrayList: [], // 完整数据
+				displayList: [], // 显示的数据
+				pageSize: 1, // 每次加载1条
+				currentPage: 1,
+				hasMore: true
 			}
 		},
 		async onLoad() {
 			const app = getApp()
-			if (!app.globalData.token) {
-				uni.redirectTo({
-					url: '/pages/login/index'
-				});
+			// if (!app.globalData.token) {
+			// 	uni.redirectTo({
+			// 		url: "/pages/featureIntro/index"
+			// 	})
+			// }
+			const params1 = {}
+			const res = await getIndex(params1)
+			if (res) {
+				this.dataObj = res
 			}
-			uni.request({
-				url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
-				method: 'POST',
-				data: {},
-				success: (res) => {
-					this.dataObj = res.data
-				}
-			});
+
+			// 获取完整数据
 			uni.request({
 				url: 'https://m1.apifoxmock.com/m1/6729370-6440575-default/api/tasklist',
 				method: 'POST',
@@ -91,11 +102,43 @@
 				},
 				success: (res) => {
 					this.arrayList = res.data
+					this.loadMoreData()
 				}
 			});
 		},
+		onReachBottom() {
+			this.loadMoreData()
+		},
+		onPullDownRefresh() {
+			this.displayList = []
+			this.currentPage = 1
+			this.hasMore = true
+			this.loadMoreData()
+			uni.stopPullDownRefresh()
+		},
 		methods: {
+			loadMoreData() {
+				if (!this.hasMore) {
+					uni.showToast({
+						title: '没有更多数据了',
+						icon: 'none'
+					})
+					return
+				}
+				const startIndex = (this.currentPage - 1) * this.pageSize
+				const endIndex = startIndex + this.pageSize
+				const newData = this.arrayList.slice(startIndex, endIndex)
 
+				if (newData.length > 0) {
+					this.displayList = [...this.displayList, ...newData]
+					this.currentPage++
+					if (endIndex >= this.arrayList.length) {
+						this.hasMore = false
+					}
+				} else {
+					this.hasMore = false
+				}
+			}
 		},
 		filters: {
 			toFixed(value, digits) {
@@ -109,6 +152,23 @@
 <style scoped lang="scss">
 	.list {
 		padding: 0rpx 20rpx;
+	}
+
+	.load-more-btn {
+		text-align: center;
+		padding: 30rpx;
+		margin: 20rpx 0;
+		background-color: #92B48D;
+		color: white;
+		border-radius: 10rpx;
+		font-size: 32rpx;
+	}
+
+	.load-more {
+		text-align: center;
+		padding: 30rpx;
+		color: #999;
+		font-size: 28rpx;
 	}
 
 	.listRow {

@@ -47,6 +47,11 @@
 						url: "/pages/aboutUs/index"
 					},
 					{
+						icon: "/static/pic_11.png",
+						key: '水印相机',
+						url: "/pages/takePhoto/index"
+					},
+					{
 						icon: "/static/pic_06.png",
 						key: '退出登录',
 						url: ""
