@@ -3,7 +3,7 @@ export default {
   globalData: {
     userInfo: {},
     token: "",
-    baseUrl: "https://m1.apifoxmock.com/m1/5178036-4843222-default",
+    baseUrl: "",
   },
   onLaunch: function () {
     console.log("App Launch");

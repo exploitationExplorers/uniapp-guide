@@ -1,5 +1,4 @@
-const app = getApp()
-const BASE_URL = app.globalData.baseUrl;
+const BASE_URL = 'https://m1.apifoxmock.com/m1/5178036-4843222-default';
 function request(options) {
   return new Promise((resolve, reject) => {
     uni.request({
@@ -72,7 +71,7 @@ export function getIndex(params) {
  */
 export function getIndexList(params) {
   return request({
-    url: '/api/tasklist',
+    url: '/api/total',
     method: 'POST',
     data: params
   });
