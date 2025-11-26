@@ -31,7 +31,7 @@
 <script>
 	import {
 		getStatistics
-	} from '../../request/api/index.js'
+	} from '@/request/api/index.js'
 
 	export default {
 		data() {

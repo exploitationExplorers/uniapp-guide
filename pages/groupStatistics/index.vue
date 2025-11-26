@@ -60,7 +60,7 @@
 <script>
 	import {
 		getTravelAgencies
-	} from '../../request/api/index.js'
+	} from '@/request/api/index.js'
 	export default {
 		data() {
 			const searchKeyword = ""
@@ -112,7 +112,8 @@
 			for (let i = 1; i <= 12; i++) {
 				months.push(i)
 			}
-			for (let i = 1; i <= 31; i++) {
+			const daysInMonth = new Date(year, month, 0).getDate()
+			for (let i = 1; i <= daysInMonth; i++) {
 				days.push(i)
 			}
 			return {
@@ -143,9 +144,19 @@
 		methods: {
 			bindChange(e) {
 				const val = e.detail.value
-				this.year = this.years[val[0]]
-				this.month = this.months[val[1]]
-				this.day = this.days[val[2]]
+				const newYear = this.years[val[0]]
+				const newMonth = this.months[val[1]]
+				this.year = newYear
+				this.month = newMonth
+				const daysInMonth = new Date(newYear, newMonth, 0).getDate()
+				this.days = []
+				for (let i = 1; i <= daysInMonth; i++) {
+					this.days.push(i)
+				}
+				const currentDayIndex = val[2]
+				const adjustedDayIndex = Math.min(currentDayIndex, this.days.length - 1)
+				this.day = this.days[adjustedDayIndex]
+				this.value = [val[0], val[1], adjustedDayIndex]
 			},
 			cancels() {
 				console.log(this.year, 'op')
@@ -316,8 +327,9 @@
 				background-repeat: no-repeat;
 			}
 		}
+
 		.time text.active,
-		.sta text.active{
+		.sta text.active {
 			color: #7DACFA;
 		}
 

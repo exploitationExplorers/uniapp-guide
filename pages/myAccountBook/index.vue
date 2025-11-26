@@ -117,7 +117,7 @@
 		getTravelAgencies,
 		getLedgerList,
 		getLedgerDetails
-	} from '../../request/api/index.js'
+	} from '@/request/api/index.js'
 	export default {
 		data() {
 			const date = new Date()
@@ -143,9 +143,10 @@
 			for (let i = 1; i <= 12; i++) {
 				months.push(i)
 			}
-			for (let i = 1; i <= 31; i++) {
-				days.push(i)
-			}
+			const daysInMonth = new Date(year, month, 0).getDate()
+			    for (let i = 1; i <= daysInMonth; i++) {
+			      days.push(i)
+			    }
 			return {
 				years,
 				months,
@@ -170,11 +171,26 @@
 		},
 		methods: {
 			bindChange(e) {
-				const val = e.detail.value
-				this.year = this.years[val[0]]
-				this.month = this.months[val[1]]
-				this.day = this.days[val[2]]
-			},
+			    const val = e.detail.value
+			    const newYear = this.years[val[0]]
+			    const newMonth = this.months[val[1]]
+			    const newDay = this.days[val[2]] || 1
+			    if (this.year !== newYear || this.month !== newMonth) {
+			      const daysInMonth = new Date(newYear, newMonth, 0).getDate()
+			      this.days = []
+			      for (let i = 1; i <= daysInMonth; i++) {
+			        this.days.push(i)
+			      }
+			      const adjustedDay = Math.min(newDay, daysInMonth)
+			      this.day = adjustedDay
+			      const dayIndex = Math.min(val[2], this.days.length - 1)
+			      this.value = [val[0], val[1], dayIndex]
+			    } else {
+			      this.day = newDay
+			    }
+			    this.year = newYear
+			    this.month = newMonth
+			  },
 			formatMoney(value) {
 				if (value === null || value === undefined) return '0.00'
 				const num = parseFloat(value)

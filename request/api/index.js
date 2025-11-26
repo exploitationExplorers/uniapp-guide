@@ -71,8 +71,8 @@ export function getIndex(params) {
  */
 export function getIndexList(params) {
   return request({
-    url: "/api/tasklist",
-    method: "POST",
-    data: params,
+    url: '/api/total',
+    method: 'POST',
+    data: params
   });
 }

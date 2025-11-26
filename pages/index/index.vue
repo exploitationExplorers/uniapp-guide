@@ -66,7 +66,7 @@
 	import {
 		getIndex,
 		getIndexList
-	} from '../../request/api/index.js'
+	} from '@/request/api/index.js'
 	export default {
 		data() {
 			return {
@@ -81,11 +81,11 @@
 		},
 		async onLoad() {
 			const app = getApp()
-			if (!app.globalData.token) {
-				uni.redirectTo({
-					url: "/pages/featureIntro/index"
-				})
-			}
+			// if (!app.globalData.token) {
+			// 	uni.redirectTo({
+			// 		url: "/pages/featureIntro/index"
+			// 	})
+			// }
 			const params1 = {}
 			const res = await getIndex(params1)
 			if (res) {
