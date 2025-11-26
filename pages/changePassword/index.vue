@@ -18,7 +18,7 @@
 			<!-- 手机号 -->
 			<view class="form-item">
 				<text class="form-label">手机号</text>
-				<text class="form-value">{{ phoneNumber || '' }}</text>
+				<text class="form-value">{{ phoneNumber  }}</text>
 			</view>
 
 			<!-- 验证码 -->
@@ -83,7 +83,7 @@
 	export default {
 		data() {
 			return {
-				phoneNumber: '15325452152', // 从用户信息获取
+				phoneNumber: '', // 从用户信息获取
 				verificationCode: '',
 				oldPassword: '',
 				newPassword: '',
@@ -95,7 +95,7 @@
 		onLoad(options) {
 			// 可以从上一页传递手机号
 			if (options.phone) {
-				this.phoneNumber = options.phone
+				this.phoneNumber = options.phone || ''
 			}
 		},
 		onUnload() {
