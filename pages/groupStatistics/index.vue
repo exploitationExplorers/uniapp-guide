@@ -15,7 +15,7 @@
 				<text :class="{active: actives}">{{startTit}}</text>
 			</view>
 			<view class="pick" @click="togglePickerData">
-				<text>旅行社</text>
+				<text :class="{active: actives3}">{{showName}}</text>
 			</view>
 			<view class="time" @click="togglePickerTime">
 				<text :class="{active: actives2}">{{selectedDate}}</text>
@@ -23,15 +23,15 @@
 			<view class="picker-container" v-show="visible">
 				<picker-view :indicator-style="indicatorStyle" :value="value" @change="bindChange" class="picker-view">
 					<picker-view-column>
-						<view class="item" style="line-height: 100rpx;font-size: 24rpx;" v-for="(item,index) in years"
+						<view class="item" style="font-size: 24rpx;" v-for="(item,index) in years"
 							:key="index">{{item}}年</view>
 					</picker-view-column>
 					<picker-view-column>
-						<view class="item" style="line-height: 100rpx;font-size: 24rpx;" v-for="(item,index) in months"
+						<view class="item" style="font-size: 24rpx;" v-for="(item,index) in months"
 							:key="index">{{item}}月</view>
 					</picker-view-column>
 					<picker-view-column>
-						<view class="item" style="line-height: 100rpx;font-size: 24rpx;" v-for="(item,index) in days"
+						<view class="item" style="font-size: 24rpx;" v-for="(item,index) in days"
 							:key="index">{{item}}日</view>
 					</picker-view-column>
 				</picker-view>
@@ -71,8 +71,10 @@
 			const months = []
 			const startTit = "状态"
 			const dataObj = []
+			const showName = "旅行社"
 			const showL = false
 			const actives2 = false
+			const actives3 = false
 			const actives = false
 			const showActive = false
 			const month = date.getMonth() + 1
@@ -129,7 +131,9 @@
 				particular,
 				showData,
 				day,
+				showName,
 				actives2,
+				actives3,
 				actives,
 				global_name,
 				dataObj,
@@ -137,7 +141,7 @@
 				showActive,
 				value: [years.length - 1, month - 1, day - 1],
 				visible: false,
-				indicatorStyle: `height: 50px;transform: translateY(-50%);`,
+				indicatorStyle: `height: 50px;transform: translateY(-30%);`,
 				selectedDate
 			}
 		},
@@ -159,11 +163,9 @@
 				this.value = [val[0], val[1], adjustedDayIndex]
 			},
 			cancels() {
-				console.log(this.year, 'op')
 				this.searchKeyword = ""
 			},
 			togglePickerTime() {
-				console.log('Toggling picker visibility:', !this.visible); // 添加这行
 				this.visible = !this.visible
 				this.showData = false
 				this.showL = false
@@ -176,12 +178,13 @@
 				this.startTit = val
 				this.showData = false
 				this.actives = true
-				// this.showL =false
 			},
 			toggleData(val) {
 				this.showData = false
 				this.showL = false
 				this.visible = false
+				this.showName = val
+				this.actives3 = true
 			},
 			headRequest() {
 
@@ -305,7 +308,7 @@
 			width: 33.3%;
 			text-align: center;
 			border-right: 2rpx solid #eee;
-			line-height: 60rpx;
+			line-height: 48rpx;
 
 			>text {
 				font-size: 24rpx;
@@ -329,7 +332,8 @@
 		}
 
 		.time text.active,
-		.sta text.active {
+		.sta text.active,
+		.pick text.active{
 			color: #7DACFA;
 		}
 
@@ -351,6 +355,7 @@
 		justify-content: flex-start;
 		align-items: center;
 		padding: 0px 20rpx;
+		margin: 20rpx 0;
 
 		.uni-form-item {
 			width: 80%;
