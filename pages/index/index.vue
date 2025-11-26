@@ -37,7 +37,9 @@
 					</view>
 					<view class="right">
 						<view class="rightTitle">
-							<text class="tit"> <{{item.projectname}}> </text>
+							<text class="tit">
+								<{{item.projectname}}>
+							</text>
 							<text>{{item.premium_group}}</text>
 						</view>
 						<view class="flexs_row">

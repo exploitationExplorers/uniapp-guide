@@ -35,7 +35,8 @@
           <image src="/static/password.png" class="icon lock-icon"></image>
           <input
             class="input"
-            :type="showPassword ? 'text' : 'password'"
+            :type="text"
+            :password="!showPassword"
             placeholder="请输入密码"
             placeholder-class="placeholder-text"
             v-model="password" />
@@ -59,7 +60,7 @@
         <view class="footer-links">
           <text class="link-text" @click="goToRegister">注册</text>
           <text class="link-text center-text" @click="openPopup">
-            默认服务器节点(点击切换)
+            {{ currentNodeName }}(点击切换)
           </text>
           <text class="link-text" @click="goToResetPwd">忘记密码</text>
         </view>
@@ -97,6 +98,7 @@
 </template>
 
 <script>
+import { login } from "@/request/api/index.js";
 export default {
   data() {
     return {
@@ -141,6 +143,7 @@ export default {
     // 选择节点
     selectNode(index) {
       this.activeNodeIndex = index;
+      console.log(this.activeNodeIndex);
       // 选中后延迟 200ms 自动关闭，体验更好
       setTimeout(() => {
         this.showPopup = false;
@@ -184,18 +187,14 @@ export default {
       }
 
       if (this.phone && this.password) {
-        let res = await uni.request({
-          url: getApp().globalData.baseUrl + "/api/login",
-          data: {
-            phone: this.phone,
-            password: this.password,
-          },
-          method: "POST",
+        let res = await login({
+          phone: this.phone,
+          password: this.password,
         });
         if (res.data.success) {
           getApp().globalData.userInfo = res.data.userInfo;
           getApp().globalData.token = res.data.token;
-          uni.navigateTo({
+          uni.switchTab({
             url: "/pages/index/index",
           });
         }
@@ -211,9 +210,9 @@ export default {
         url: "/pages/forgetPwd/index",
       });
     },
-    changeNode() {
-      uni.show;
-    },
+    // changeNode() {
+    // 	uni.show;
+    // },
   },
 };
 </script>
