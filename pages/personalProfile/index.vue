@@ -19,7 +19,7 @@
 			<view class="info-item" @click="editName">
 				<text class="label">姓名</text>
 				<view class="value-wrapper">
-					<text class="value">{{ userInfo.name }}</text>
+					<text class="value">{{ userInfo.name || '初心' }}</text>
 					<text class="arrow">›</text>
 				</view>
 			</view>
@@ -27,7 +27,7 @@
 			<!-- 电话 -->
 			<view class="info-item">
 				<text class="label">电话</text>
-				<text class="value">{{ userInfo.phone }}</text>
+				<text class="value">{{ userInfo.phone || '15325452152' }}</text>
 			</view>
 
 			<!-- 有效期至 -->
@@ -117,7 +117,7 @@
 							<text class="price-label">单价:</text>
 							<text class="price-value">{{ unitPrice }}</text>
 						</view>
-						<view class="year-row">
+						<view class="year-row" v-if="paymentMode === 'year'">
 							<text class="year-label">开通年份:</text>
 							<view class="year-control">
 								<view class="year-btn" @click="decreaseYear">-</view>
@@ -128,6 +128,19 @@
 									:disabled="true"
 								/>
 								<view class="year-btn" @click="increaseYear">+</view>
+							</view>
+						</view>
+						<view class="year-row" v-else>
+							<text class="year-label">开通月数:</text>
+							<view class="year-control">
+								<view class="year-btn" @click="decreaseMonth">-</view>
+								<input 
+									class="year-input" 
+									v-model="subscriptionMonths" 
+									type="number"
+									:disabled="true"
+								/>
+								<view class="year-btn" @click="increaseMonth">+</view>
 							</view>
 						</view>
 						<view class="amount-row">
@@ -191,17 +204,14 @@
 	export default {
 		data() {
 			return {
-				userInfo: {
-					name: 'Leslie',
-					phone: '15325452152',
-					validUntil: null // 可以设置为具体日期，如 '2024-12-31'
-				},
+				userInfo: getApp().globalData.userInfo,
 				showEditNameModal: false,
 				editNameValue: '',
 				// 支付弹窗相关
 				showPaymentModal: false,
 				paymentMode: 'year', // 'year' 或 'month'
 				subscriptionYears: 1,
+				subscriptionMonths: 1,
 				paymentMethod: 'wechat', // 'alipay' 或 'wechat'
 				termsAgreed: true
 			}
@@ -214,7 +224,7 @@
 				if (this.paymentMode === 'year') {
 					return 600 * this.subscriptionYears
 				} else {
-					return 50 * this.subscriptionYears
+					return 50 * this.subscriptionMonths
 				}
 			}
 		},
@@ -272,6 +282,14 @@
 			},
 			increaseYear() {
 				this.subscriptionYears++
+			},
+			decreaseMonth() {
+				if (this.subscriptionMonths > 1) {
+					this.subscriptionMonths--
+				}
+			},
+			increaseMonth() {
+				this.subscriptionMonths++
 			},
 			toggleTermsAgree() {
 				this.termsAgreed = !this.termsAgreed
