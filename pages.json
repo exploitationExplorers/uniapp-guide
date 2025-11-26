@@ -1,53 +1,54 @@
 {
-  "pages": [
-    {
-      "path": "pages/index/index",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/personalCenter/index",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/404/404",
-      "style": {
-        "navigationBarTitleText": "页面不存在"
-      }
-    },
-    {
-      "path": "pages/personalProfile/index",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/myAccountBook/index",
-      "style": {
-        "navigationBarTitleText": "我的账本"
-      }
-    },
-    {
-      "path": "pages/myAccountBook/revenue_details",
-      "style": {
-        "navigationBarTitleText": "财务统计"
-      }
-    },
-    {
-      "path": "pages/myAccountBook/details",
-      "style": {
-        "navigationBarTitleText": "自费返佣"
-      }
-    },
-    {
-      "path": "pages/groupStatistics/index",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
+	"pages": [{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/personalCenter/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/404/404",
+			"style": {
+				"navigationBarTitleText": "页面不存在"
+			}
+		},
+		{
+			"path": "pages/personalProfile/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/myAccountBook/index",
+			"style": {
+				"navigationBarTitleText": "我的账本"
+			}
+		},
+		{
+			"path": "pages/myAccountBook/revenue_details",
+			"style": {
+				"navigationBarTitleText": "财务统计"
+			}
+		},
+		{
+			"path": "pages/myAccountBook/details",
+			"style": {
+				"navigationBarTitleText": "自费返佣"
+			}
+		},
+		{
+			"path": "pages/groupStatistics/index",
+			"style": {
+				"navigationBarTitleText": "我的带团",
+				"navigationBarBackgroundColor": "#29b6f6",
+				"navigationBarTextStyle": "white"
+			}
+		},
 		{
 			"path": "pages/aboutUs/index",
 			"style": {

@@ -56,3 +56,23 @@ export function getStatistics(params) {
     data: params
   });
 }
+/**
+ * 获取首页数据
+ */
+export function getIndex(params) {
+  return request({
+    url: '/api/total',
+    method: 'POST',
+    data: params
+  });
+}
+/**
+ * 获取首页列表数据
+ */
+export function getIndexList(params) {
+  return request({
+    url: '/api/tasklist',
+    method: 'POST',
+    data: params
+  });
+}
