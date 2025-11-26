@@ -20,7 +20,7 @@
 		{
 			"path": "pages/personalProfile/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "个人资料"
 			}
 		},
 		{
@@ -44,7 +44,9 @@
 		{
 			"path": "pages/groupStatistics/index",
 			"style": {
-				"navigationBarTitleText": "我的带团"
+				"navigationBarTitleText": "我的带团",
+				"navigationBarBackgroundColor": "#29b6f6",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
@@ -55,12 +57,12 @@
 				"navigationBarBackgroundColor": "#29b6f6"
 			}
 		},
-		{
-			"path": "pages/takePhoto/index",
-			"style": {
-				"navigationBarTitleText": ""
-			}
-		},
+    {
+      "path": "pages/takePhoto/index",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
     {
       "path": "pages/login/index",
       "style": {
