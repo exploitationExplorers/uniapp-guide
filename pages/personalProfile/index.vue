@@ -1,7 +1,7 @@
 <template>
 	<view class="container">
 		<!-- 自定义导航栏 -->
-		<view class="custom-navbar">
+		<!-- <view class="custom-navbar">
 			<view class="navbar-content">
 				<view class="navbar-left" @click="goBack">
 					<text class="back-icon">‹</text>
@@ -11,7 +11,7 @@
 					<text class="more-icon">⋯</text>
 				</view>
 			</view>
-		</view>
+		</view> -->
 
 		<!-- 内容区域 -->
 		<view class="content">
