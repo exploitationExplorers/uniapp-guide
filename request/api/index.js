@@ -1,4 +1,5 @@
-const BASE_URL = 'https://m1.apifoxmock.com/m1/5178036-4843222-default';
+const app = getApp()
+const BASE_URL = app.globalData.baseUrl;
 function request(options) {
   return new Promise((resolve, reject) => {
     uni.request({
