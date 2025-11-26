@@ -34,7 +34,8 @@
         <input
           class="input"
           type="password"
-          placeholder=""
+          password
+          placeholder="请输入密码"
           v-model="form.password" />
       </view>
 
@@ -43,8 +44,9 @@
         <text class="label">确认密码</text>
         <input
           class="input"
+          password
           type="password"
-          placeholder=""
+          placeholder="请确认密码"
           v-model="form.confirmPassword" />
       </view>
     </view>
@@ -57,6 +59,7 @@
 </template>
 
 <script>
+import { getCode, resetPwd } from "@/request/api/index.js";
 export default {
   data() {
     return {
@@ -83,7 +86,7 @@ export default {
     }
   },
   methods: {
-    getCode() {
+    async getCode() {
       if (this.isCounting) return;
 
       if (!this.form.phone) {
@@ -94,42 +97,33 @@ export default {
       if (!phoneReg.test(this.form.phone)) {
         return uni.showToast({ title: "手机号格式不正确", icon: "none" });
       }
-
-      uni.request({
-        url: getApp().globalData.baseUrl + "/api/getCode",
-        data: { phone: this.form.phone },
-        method: "GET",
-        success: (res) => {
-          if (res.data && res.data.success) {
-            if (res.data.message && res.data.message.length <= 6) {
-              this.form.code = res.data.message;
-            }
-            uni.showToast({ title: "验证码已发送", icon: "none" });
-
-            this.isCounting = true;
-            this.countdown = 60;
-            this.timer = setInterval(() => {
-              this.countdown--;
-              if (this.countdown <= 0) {
-                clearInterval(this.timer);
-                this.timer = null;
-                this.isCounting = false;
-                this.countdown = 60;
-              }
-            }, 1000);
-          } else {
-            uni.showToast({
-              title: res.data.message || "获取验证码失败",
-              icon: "none",
-            });
+      await getCode({ phone: this.form.phone }).then((res) => {
+        if (res.data && res.data.success) {
+          if (res.data.message && res.data.message.length <= 6) {
+            this.form.code = res.data.message;
           }
-        },
-        fail: () => {
-          uni.showToast({ title: "网络请求失败", icon: "none" });
-        },
+          uni.showToast({ title: "验证码已发送", icon: "none" });
+
+          this.isCounting = true;
+          this.countdown = 60;
+          this.timer = setInterval(() => {
+            this.countdown--;
+            if (this.countdown <= 0) {
+              clearInterval(this.timer);
+              this.timer = null;
+              this.isCounting = false;
+              this.countdown = 60;
+            }
+          }, 1000);
+        } else {
+          uni.showToast({
+            title: res.data.message || "获取验证码失败",
+            icon: "none",
+          });
+        }
       });
     },
-    handleSubmit() {
+    async handleSubmit() {
       const { phone, code, password, confirmPassword } = this.form;
 
       if (!phone) return uni.showToast({ title: "请输入手机号", icon: "none" });
@@ -149,34 +143,24 @@ export default {
       }
 
       uni.showLoading({ title: "提交中..." });
-
-      uni.request({
-        url: getApp().globalData.baseUrl + "/api/resetPwd",
-        method: "POST",
-        data: {
-          phone,
-          code,
-          password,
-        },
-        success: (res) => {
+      await resetPwd({
+        phone,
+        code,
+        password,
+      }).then((res) => {
+        uni.hideLoading();
+        if (res.data && res.data.success) {
+          uni.showToast({ title: "密码重置成功", icon: "success" });
+          setTimeout(() => {
+            uni.navigateBack();
+          }, 1500);
+        } else {
           uni.hideLoading();
-          if (res.data && res.data.success) {
-            uni.showToast({ title: "密码重置成功", icon: "success" });
-            setTimeout(() => {
-              uni.navigateBack();
-            }, 1500);
-          } else {
-            uni.hideLoading();
-            uni.showToast({
-              title: res.data.message || "重置失败",
-              icon: "none",
-            });
-          }
-        },
-        fail: () => {
-          uni.hideLoading();
-          uni.showToast({ title: "网络请求失败", icon: "none" });
-        },
+          uni.showToast({
+            title: res.data.message || "重置失败",
+            icon: "none",
+          });
+        }
       });
     },
   },

@@ -24,7 +24,7 @@
         <view
           class="verify-btn"
           :class="{ disabled: isCounting }"
-          @click="getCode">
+          @click="getPhoneCode">
           {{ verifyBtnText }}
         </view>
       </view>
@@ -34,25 +34,23 @@
         <text class="label">登录密码</text>
         <input
           class="input"
-          type="password"
-          placeholder=""
-          v-model="form.password" />
+          type="text" password placeholder="请输入密码" v-model="form.password" />
       </view>
 
       <!-- 确认密码 -->
       <view class="form-item">
         <text class="label">确认密码</text>
-        <input
-          class="input"
-          type="password"
-          placeholder=""
-          v-model="form.confirmPassword" />
+        <input class="input" password type="text" placeholder="请确认密码" v-model="form.confirmPassword"/>
       </view>
 
       <!-- 姓名 -->
       <view class="form-item">
         <text class="label">姓名</text>
-        <input class="input" type="text" placeholder="" v-model="form.name" />
+        <input
+          class="input"
+          type="text"
+          placeholder="请输入姓名"
+          v-model="form.name" />
       </view>
     </view>
 
@@ -81,6 +79,7 @@
 </template>
 
 <script>
+import { register, getCode } from "@/request/api/index.js";
 export default {
   data() {
     return {
@@ -109,7 +108,7 @@ export default {
     }
   },
   methods: {
-    getCode() {
+    async getPhoneCode() {
       if (this.isCounting) return;
 
       if (!this.form.phone) {
@@ -121,42 +120,46 @@ export default {
         return uni.showToast({ title: "手机号格式不正确", icon: "none" });
       }
 
-      uni.request({
-        url: getApp().globalData.baseUrl + "/api/getCode",
-        data: { phone: this.form.phone },
-        method: "GET",
-        success: (res) => {
-          if (res.data && res.data.success) {
-            this.form.code = res.data.message;
-            uni.showToast({ title: "验证码已发送", icon: "none" });
+      await getCode({ phone: this.form.phone }).then((res) => {
+        console.log(res);
+        if (res.data && res.data.success) {
+          uni.showToast({ title: "验证码已发送", icon: "none" });
 
-            this.isCounting = true;
-            this.countdown = 60;
-            this.timer = setInterval(() => {
-              this.countdown--;
-              if (this.countdown <= 0) {
-                clearInterval(this.timer);
-                this.timer = null;
-                this.isCounting = false;
-                this.countdown = 60;
-              }
-            }, 1000);
-          } else {
-            uni.showToast({
-              title: res.data.message || "获取验证码失败",
-              icon: "none",
-            });
-          }
-        },
-        fail: () => {
-          uni.showToast({ title: "网络请求失败", icon: "none" });
-        },
+          this.isCounting = true;
+          this.countdown = 60;
+          this.timer = setInterval(() => {
+            this.countdown--;
+            if (this.countdown <= 0) {
+              clearInterval(this.timer);
+              this.timer = null;
+              this.isCounting = false;
+              this.countdown = 60;
+            }
+          }, 1000);
+        }
       });
+      // uni.request({
+      //   url: getApp().globalData.baseUrl + "/api/getCode",
+      //   data: { phone: this.form.phone },
+      //   method: "GET",
+      //   success: (res) => {
+
+      //     } else {
+      //       uni.showToast({
+      //         title: res.data.message || "获取验证码失败",
+      //         icon: "none",
+      //       });
+      //     }
+      //   },
+      //   fail: () => {
+      //     uni.showToast({ title: "网络请求失败", icon: "none" });
+      //   },
+      // });
     },
     checkboxChange(e) {
       this.agreed = e.detail.value.includes("agreed");
     },
-    handleRegister() {
+    async handleRegister() {
       // 1. 协议校验
       if (!this.agreed) {
         return uni.showToast({ title: "请先同意使用条款", icon: "none" });
@@ -185,35 +188,26 @@ export default {
 
       // 4. 发起请求
       uni.showLoading({ title: "注册中..." });
-
-      uni.request({
-        url: getApp().globalData.baseUrl + "/api/register",
-        method: "POST",
-        data: {
-          phone,
-          code,
-          password,
-          name,
-        },
-        success: (res) => {
-          uni.hideLoading();
-          if (res.data && res.data.success) {
-            uni.showToast({ title: "注册成功", icon: "success" });
-            // 延迟跳转回登录页
-            setTimeout(() => {
-              uni.navigateBack();
-            }, 1500);
-          } else {
-            uni.showToast({
-              title: res.data.message || "注册失败",
-              icon: "none",
-            });
-          }
-        },
-        fail: (error) => {
-          uni.hideLoading();
-          uni.showToast({ title: "网络请求失败", icon: "none" });
-        },
+      await register({
+        phone,
+        code,
+        password,
+        name,
+      }).then((res) => {
+        console.log(res.data);
+        uni.hideLoading();
+        if (res.data && res.data.success) {
+          uni.showToast({ title: "注册成功", icon: "success" });
+          // 延迟跳转回登录页
+          setTimeout(() => {
+            uni.navigateBack();
+          }, 1500);
+        } else {
+          uni.showToast({
+            title: res.data.message || "注册失败",
+            icon: "none",
+          });
+        }
       });
     },
   },

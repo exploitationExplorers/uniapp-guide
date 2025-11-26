@@ -76,3 +76,39 @@ export function getIndexList(params) {
     data: params
   });
 }
+
+//登录接口
+export function login(params) {
+  return request({
+    url: "/api/login",
+    method: "POST",
+    data: params,
+  });
+}
+
+//注册接口
+export function register(params) {
+  return request({
+    url: "/api/register",
+    method: "POST",
+    data: params,
+  });
+}
+
+//获取验证码
+export function getCode(params) {
+  return request({
+    url: "/api/getCode",
+    method: "GET",
+    data: params,
+  });
+}
+
+//获取验证码
+export function resetPwd(params) {
+  return request({
+    url: "/api/resetPwd",
+    method: "POST",
+    data: params,
+  });
+}

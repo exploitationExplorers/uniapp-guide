@@ -1,7 +1,7 @@
 <template>
 	<view class="flex_row">
 		<text>总计：</text>
-		<text>{{detailsMoney}}</text>
+		<text>{{detailsMoney}}元</text>
 	</view>
 </template>
 
@@ -13,10 +13,15 @@
 			}
 		},
 		methods: {
-		
+
 		},
-		onLoad(val){
+		onLoad(val) {
 			this.detailsMoney = val.number
+			const name = decodeURIComponent(val.name || '');
+			uni.setNavigationBarTitle({
+				title: name
+			});
+
 		}
 	}
 </script>

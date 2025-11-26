@@ -18,7 +18,7 @@
 						<text class="num">0</text>
 					</view>
 					<view :class="{'shows': true}" v-show="item.toggleShow">
-						<view :class="{'list': true}" v-for="(v,i) in item.array" :key="i" @click="navLink(v.amount)">
+						<view :class="{'list': true}" v-for="(v,i) in item.array" :key="i" @click="navLink(v.amount,v.name)">
 							<text class="txt">{{v.name}}</text>
 						</view>
 					</view>
@@ -44,9 +44,9 @@
 			toggleList(item) {
 				item.toggleShow = !item.toggleShow;
 			},
-			navLink(options) {
+			navLink(options,name) {
 				uni.navigateTo({
-					url: `/pages/myAccountBook/details?number=${encodeURIComponent(options)}`,
+					url: `/pages/myAccountBook/details?number=${encodeURIComponent(options)}&name=${encodeURIComponent(name)}`,
 					animationType: 'slide-in-right',
 					animationDuration: 300,
 					success: () => {
