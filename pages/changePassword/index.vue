@@ -18,7 +18,7 @@
 			<!-- 手机号 -->
 			<view class="form-item">
 				<text class="form-label">手机号</text>
-				<text class="form-value">{{ phoneNumber }}</text>
+				<text class="form-value">{{ phoneNumber || '' }}</text>
 			</view>
 
 			<!-- 验证码 -->
