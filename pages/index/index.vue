@@ -26,39 +26,43 @@
 			</view>
 		</view>
 
-		<!-- 列表 -->
-		<view class="list">
-			<view class="listRow" v-for="(item,index) in displayList" :key="index">
-				<view :class="['left',item.code == 1 ? 'active' : 'notActive']">
-					<text v-if="item.code == 1">已完团</text>
-					<text v-else>未完团</text>
+		<!-- 列表区域 - 使用 scroll-view -->
+		<scroll-view class="list-scroll" scroll-y :style="{ height: scrollHeight + 'px' }" @scrolltolower="loadMoreData"
+			:refresher-enabled="false">
+			<view class="list">
+				<view class="listRow" v-for="(item,index) in displayList" :key="index">
+					<view :class="['left',item.code == 1 ? 'active' : 'notActive']">
+						<text v-if="item.code == 1">已完团</text>
+						<text v-else>未完团</text>
+					</view>
+					<view class="right">
+						<view class="rightTitle">
+							<text class="tit">
+								<{{item.projectname}}>
+							</text>
+							<text>{{item.premium_group}}</text>
+						</view>
+						<view class="flexs_row">
+							<text>团号：{{item.teamn_umber}}</text>
+							<text v-if="item.awaiting_filing == 0" class="active">待审核</text>
+							<text v-else class="notActive">财务审核</text>
+						</view>
+						<view class="times">
+							<text>出团时间：{{item.tart_time}}</text>
+							<text>完团时间：{{item.end_time}}</text>
+						</view>
+						<view class="monet">收入：{{item.earnings | toFixed(1)}}元</view>
+					</view>
 				</view>
-				<view class="right">
-					<view class="rightTitle">
-						<text class="tit">{{item.projectname}}</text>
-						<text>{{item.premium_group}}</text>
-					</view>
-					<view class="flexs_row">
-						<text>团号：{{item.teamn_umber}}</text>
-						<text v-if="item.awaiting_filing == 0" class="active">待审核</text>
-						<text v-else class="notActive">财务审核</text>
-					</view>
-					<view class="times">
-						<text>出团时间：{{item.tart_time}}</text>
-						<text>完团时间：{{item.end_time}}</text>
-					</view>
-					<view class="monet">收入：{{item.earnings | toFixed(1)}}元</view>
-				</view>
-			</view>
-			<view class="load-more-btn" v-if="hasMore && displayList.length > 0" @click="loadMoreData">
-				<text>加载更多</text>
-			</view>
 
-			<view class="load-more">
-				<text v-if="!hasMore && displayList.length > 0">没有更多数据了</text>
-				<text v-if="displayList.length === 0">暂无数据</text>
+				<!-- 加载状态 -->
+				<view class="load-more">
+					<text v-if="loading">加载中...</text>
+					<text v-else-if="!hasMore && displayList.length > 0">没有更多数据了</text>
+					<text v-else-if="displayList.length === 0">暂无数据</text>
+				</view>
 			</view>
-		</view>
+		</scroll-view>
 	</view>
 </template>
 
@@ -74,25 +78,26 @@
 				dataObj: {},
 				arrayList: [], // 完整数据
 				displayList: [], // 显示的数据
-				pageSize: 1, // 每次加载1条
+				pageSize: 2, // 每次加载5条
 				currentPage: 1,
-				hasMore: true
+				hasMore: true,
+				loading: false, // 添加加载状态
+				isLoading: false, // 防止重复加载
+				scrollHeight: 400 // 滚动区域高度，会在onReady中动态计算
 			}
 		},
 		async onLoad() {
 			const app = getApp()
-			// if (!app.globalData.token) {
+			const params1 = {}
+			// if(!app.globalData.token){
 			// 	uni.redirectTo({
-			// 		url: "/pages/featureIntro/index"
+			// 		url:"/pages/featureIntro/index"
 			// 	})
 			// }
-			const params1 = {}
 			const res = await getIndex(params1)
 			if (res) {
 				this.dataObj = res
 			}
-
-			// 获取完整数据
 			uni.request({
 				url: 'https://m1.apifoxmock.com/m1/6729370-6440575-default/api/tasklist',
 				method: 'POST',
@@ -101,36 +106,45 @@
 					password: "12345678"
 				},
 				success: (res) => {
-					this.arrayList = res.data
-					this.loadMoreData()
-				}
+					this.arrayList = res.data || [];
+					this.loadMoreData();
+				},
 			});
 		},
-		onReachBottom() {
-			this.loadMoreData()
-		},
-		onPullDownRefresh() {
-			this.displayList = []
-			this.currentPage = 1
-			this.hasMore = true
-			this.loadMoreData()
-			uni.stopPullDownRefresh()
+		onReady() {
+			this.calculateScrollHeight();
 		},
 		methods: {
-			loadMoreData() {
-				if (!this.hasMore) {
-					uni.showToast({
-						title: '没有更多数据了',
-						icon: 'none'
-					})
+			calculateScrollHeight() {
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.content').boundingClientRect(data => {
+					if (data) {
+						uni.getSystemInfo({
+							success: (res) => {
+								const windowHeight = res.windowHeight;
+								const imageHeight = 400;
+								const imageHeightPx = imageHeight / 2;
+								this.scrollHeight = windowHeight - imageHeightPx - 20;
+								console.log('scrollHeight:', this.scrollHeight);
+							}
+						});
+					}
+				}).exec();
+			},
+
+			async loadMoreData() {
+				if (this.isLoading || !this.hasMore) {
 					return
 				}
+
+				this.loading = true
+				this.isLoading = true
+
 				const startIndex = (this.currentPage - 1) * this.pageSize
 				const endIndex = startIndex + this.pageSize
 				const newData = this.arrayList.slice(startIndex, endIndex)
-
 				if (newData.length > 0) {
-					this.displayList = [...this.displayList, ...newData]
+					this.displayList = [...this.displayList, ...newData];
 					this.currentPage++
 					if (endIndex >= this.arrayList.length) {
 						this.hasMore = false
@@ -138,6 +152,9 @@
 				} else {
 					this.hasMore = false
 				}
+
+				this.loading = false
+				this.isLoading = false
 			}
 		},
 		filters: {
@@ -148,20 +165,46 @@
 		}
 	}
 </script>
-
 <style scoped lang="scss">
+	.list-scroll {
+
+		::-webkit-scrollbar {
+			display: none;
+			width: 0;
+			height: 0;
+			color: transparent;
+		}
+	}
+
 	.list {
 		padding: 0rpx 20rpx;
 	}
 
-	.load-more-btn {
-		text-align: center;
-		padding: 30rpx;
-		margin: 20rpx 0;
-		background-color: #92B48D;
-		color: white;
-		border-radius: 10rpx;
-		font-size: 32rpx;
+	::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
+		color: transparent;
+	}
+
+	page {
+		height: 100%;
+		background-color: #f6f6f6;
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+			width: 0;
+			height: 0;
+			background: transparent;
+		}
+	}
+
+	.content {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.load-more {
@@ -169,6 +212,7 @@
 		padding: 30rpx;
 		color: #999;
 		font-size: 28rpx;
+		position: relative;
 	}
 
 	.listRow {
@@ -179,6 +223,8 @@
 		margin-top: 30rpx;
 		box-shadow: 0rpx 0rpx 10rpx rgba(0, 0, 0, 0.1);
 		padding: 10rpx;
+		background-color: #fff;
+		min-height: 200rpx;
 
 		.left {
 			background-color: #92B48D;
@@ -235,7 +281,7 @@
 				align-items: center;
 
 				.tit {
-					font-size: 36rpx;
+					font-size: 32rpx;
 					color: #111;
 				}
 			}

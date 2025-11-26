@@ -15,7 +15,7 @@ coverage
 *.local
 
 # Uniapp 构建产物
-unpackage/
+unpackage\
 
 /cypress/videos/
 /cypress/screenshots/
