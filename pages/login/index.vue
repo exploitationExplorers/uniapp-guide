@@ -39,7 +39,7 @@
 				<!-- 登录按钮 -->
 				<button class="btn-login" @click="handleLogin">登录</button>
 				<button class="btn-login" @getphonenumber="getPhone" open-type="getPhoneNumber">
-					微信登录
+					一键登录
 				</button>
 
 				<!-- 底部链接 -->

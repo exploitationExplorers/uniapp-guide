@@ -83,7 +83,7 @@
 				if (!val) {
 					uni.showModal({
 						title: '',
-						content: '确定注销当前登录账号吗？',
+						content: '确定退出当前登录账号吗？',
 						success: (res) => {
 							if (res.confirm) {
 								console.log('用户点击确定')
