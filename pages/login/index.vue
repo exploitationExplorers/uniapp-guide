@@ -224,15 +224,25 @@ export default {
 .login-page {
   min-height: 100vh;
   position: relative;
-  /* 主背景色（两边的颜色） */
-  background: linear-gradient(
-    135deg,
-    #5a8fa8 0%,
-    #6eb3c4 25%,
-    #82c9d0 50%,
-    #a8dfce 75%,
-    #d0f0d8 100%
-  );
+  background: 
+    radial-gradient(
+      ellipse 40% 60% at 100% 55%,
+      #e4f0d8 0%,
+      rgba(179, 226, 206, 0) 70%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      #e4f0d8 0%,
+      rgba(211, 236, 216, 0) 25%
+    ),
+    linear-gradient(
+      135deg,
+      #5a8fa8 0%,
+      #6eb3c4 25%,
+      #82c9d0 50%,
+     
+      #7ce5d4 100%
+    );
   display: flex;
   flex-direction: column;
 }
@@ -245,12 +255,12 @@ export default {
   width: 100%;
   height: 100%;
 
-  background: linear-gradient(
+  /* background: linear-gradient(
     180deg,
-    /* 光带角度：右下 → 左上 */ rgba(62, 213, 213, 0.7) 0%,
-    /* 右下最亮 */ rgba(89, 183, 224, 0.2) 25%,
-    /* 中间亮 */ rgba(123, 228, 211, 0.2) 60% /* 左上完全透明 */
-  );
+    rgba(62, 213, 213, 0.7) 0%,
+    rgba(89, 183, 224, 0.2) 25%,
+    rgba(123, 228, 211, 0.2) 60%
+  ); */
 
   pointer-events: none;
 }
