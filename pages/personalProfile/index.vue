@@ -347,6 +347,34 @@
 </script>
 
 <style scoped lang="scss">
+	@mixin flex($justify: center, $align: center) {
+		display: flex;
+		justify-content: $justify;
+		align-items: $align;
+	}
+
+	@mixin overlay-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		@include flex;
+	}
+
+	@mixin dialog-card($radius: 16rpx) {
+		background-color: #fff;
+		border-radius: $radius;
+		overflow: hidden;
+	}
+
+	@mixin text-style($size, $color, $weight: 400) {
+		font-size: $size;
+		color: $color;
+		font-weight: $weight;
+	}
+
 	.container {
 		width: 100%;
 		min-height: 100vh;
@@ -365,58 +393,45 @@
 	}
 
 	.navbar-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex(space-between);
 		height: 88rpx;
 		padding: 0 30rpx;
 	}
 
 	.navbar-left {
 		width: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
+		@include flex(flex-start);
 	}
 
 	.back-icon {
-		font-size: 60rpx;
-		color: #fff;
+		@include text-style(60rpx, #fff, 300);
 		line-height: 1;
-		font-weight: 300;
 	}
 
 	.navbar-title {
 		flex: 1;
 		text-align: center;
-		font-size: 36rpx;
-		font-weight: 500;
-		color: #fff;
+		@include text-style(36rpx, #fff, 500);
 	}
 
 	.navbar-right {
 		width: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
+		@include flex(flex-end);
 	}
 
 	.more-icon {
-		font-size: 40rpx;
-		color: #fff;
+		@include text-style(40rpx, #fff);
 		line-height: 1;
 	}
 
 	/* 内容区域 */
 	.content {
-		margin-top: calc(var(--status-bar-height, 44rpx) + 88rpx);
+
 		background-color: #fff;
 	}
 
 	.info-item {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex(space-between);
 		padding: 36rpx 40rpx;
 		border-bottom: 1rpx solid #eee;
 		min-height: 100rpx;
@@ -424,29 +439,24 @@
 	}
 
 	.label {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 		flex-shrink: 0;
 	}
 
-	.value-wrapper {
-		display: flex;
-		align-items: center;
+	.value-wrapper,
+	.modal-input-wrapper {
+		@include flex(flex-end);
 		flex: 1;
-		justify-content: flex-end;
 	}
 
 	.value {
-		font-size: 32rpx;
-		color: #666;
+		@include text-style(32rpx, #666);
 		margin-right: 20rpx;
 	}
 
 	.arrow {
-		font-size: 40rpx;
-		color: #999;
+		@include text-style(40rpx, #999, 300);
 		line-height: 1;
-		font-weight: 300;
 	}
 
 	/* 有效期特殊样式 */
@@ -458,14 +468,11 @@
 
 	.validity-content {
 		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex(space-between);
 	}
 
 	.validity-right {
-		display: flex;
-		align-items: center;
+		@include flex(flex-start);
 		gap: 20rpx;
 	}
 
@@ -480,36 +487,24 @@
 	}
 
 	.renew-text {
-		font-size: 28rpx;
-		color: #fff;
+		@include text-style(28rpx, #fff);
 	}
 
 	.promotion-text {
 		margin-top: 20rpx;
-		font-size: 24rpx;
-		color: #FF9500;
+		@include text-style(24rpx, #FF9500);
 		width: 100%;
 	}
 
 	/* 编辑姓名弹窗 */
 	.modal-mask {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include overlay-mask;
 		z-index: 1000;
 	}
 
 	.modal-dialog {
+		@include dialog-card;
 		width: 600rpx;
-		background-color: #fff;
-		border-radius: 16rpx;
-		overflow: hidden;
 	}
 
 	.modal-content {
@@ -517,52 +512,36 @@
 	}
 
 	.modal-input-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex(space-between);
 		padding: 40rpx;
 		border-bottom: 1rpx solid #eee;
 	}
 
 	.modal-label {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 		flex-shrink: 0;
 	}
 
-	.modal-input-wrapper {
-		display: flex;
-		align-items: center;
-		flex: 1;
-		justify-content: flex-end;
-	}
-
 	.modal-input {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 		text-align: right;
 		flex: 1;
 		margin-right: 20rpx;
 	}
 
 	.modal-arrow {
-		font-size: 40rpx;
-		color: #999;
+		@include text-style(40rpx, #999, 300);
 		line-height: 1;
-		font-weight: 300;
 	}
 
 	.modal-buttons {
-		display: flex;
-		align-items: center;
+		@include flex(space-between);
 		height: 100rpx;
 	}
 
 	.modal-btn {
 		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex;
 		height: 100%;
 		border-right: 1rpx solid #eee;
 	}
@@ -576,8 +555,7 @@
 	}
 
 	.cancel-text {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 	}
 
 	.save-btn {
@@ -585,30 +563,18 @@
 	}
 
 	.save-text {
-		font-size: 32rpx;
-		color: #FF9500;
-		font-weight: 500;
+		@include text-style(32rpx, #FF9500, 500);
 	}
 
 	/* 在线支付弹窗 */
 	.payment-modal-mask {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include overlay-mask;
 		z-index: 1001;
 	}
 
 	.payment-modal-dialog {
+		@include dialog-card;
 		width: 680rpx;
-		background-color: #fff;
-		border-radius: 16rpx;
-		overflow: hidden;
 		max-height: 90vh;
 		overflow-y: auto;
 	}
@@ -618,9 +584,7 @@
 	}
 
 	.payment-title {
-		font-size: 36rpx;
-		font-weight: 500;
-		color: #333;
+		@include text-style(36rpx, #333, 500);
 		text-align: center;
 		margin-bottom: 40rpx;
 	}
@@ -630,27 +594,24 @@
 	}
 
 	.section-title {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 		margin-bottom: 24rpx;
 	}
 
 	/* 付费模式 */
 	.payment-mode-options {
-		display: flex;
+		@include flex;
 		gap: 40rpx;
 	}
 
 	.mode-option {
-		display: flex;
-		align-items: center;
+		@include flex(flex-start);
 		gap: 16rpx;
 	}
 
-	.radio-wrapper {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.radio-wrapper,
+	.checkbox-wrapper {
+		@include flex;
 	}
 
 	.radio-circle {
@@ -658,9 +619,7 @@
 		height: 40rpx;
 		border: 2rpx solid #ddd;
 		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex;
 		background-color: #fff;
 	}
 
@@ -676,35 +635,29 @@
 	}
 
 	.mode-text {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 	}
 
 	/* 价格和年份 */
 	.price-row,
 	.year-row,
 	.amount-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex(space-between);
 		margin-bottom: 24rpx;
 	}
 
 	.price-label,
 	.year-label,
 	.amount-label {
-		font-size: 32rpx;
-		color: #666;
+		@include text-style(32rpx, #666);
 	}
 
 	.price-value {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 	}
 
 	.year-control {
-		display: flex;
-		align-items: center;
+		@include flex(flex-start);
 		gap: 20rpx;
 	}
 
@@ -713,11 +666,8 @@
 		height: 60rpx;
 		border: 1rpx solid #ddd;
 		border-radius: 8rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 36rpx;
-		color: #333;
+		@include flex;
+		@include text-style(36rpx, #333);
 		background-color: #fff;
 	}
 
@@ -725,34 +675,29 @@
 		width: 100rpx;
 		height: 60rpx;
 		text-align: center;
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 		border: 1rpx solid #ddd;
 		border-radius: 8rpx;
 	}
 
 	.amount-value {
-		font-size: 36rpx;
-		color: #FF9500;
-		font-weight: 500;
+		@include text-style(36rpx, #FF9500, 500);
 	}
 
 	/* 支付方式 */
 	.payment-method-options {
-		display: flex;
+		@include flex(flex-start);
 		flex-direction: column;
 		gap: 24rpx;
 	}
 
 	.method-option {
-		display: flex;
-		align-items: center;
+		@include flex(flex-start);
 		gap: 16rpx;
 	}
 
 	.method-text {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 	}
 
 	/* 条款同意 */
@@ -761,15 +706,8 @@
 	}
 
 	.terms-wrapper {
-		display: flex;
-		align-items: center;
+		@include flex(flex-start);
 		gap: 12rpx;
-	}
-
-	.checkbox-wrapper {
-		display: flex;
-		align-items: center;
-		justify-content: center;
 	}
 
 	.checkbox {
@@ -777,9 +715,7 @@
 		height: 36rpx;
 		border: 2rpx solid #ddd;
 		border-radius: 4rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex;
 		background-color: #fff;
 	}
 
@@ -789,25 +725,20 @@
 	}
 
 	.checkbox-icon {
-		color: #fff;
-		font-size: 24rpx;
-		font-weight: bold;
+		@include text-style(24rpx, #fff, 700);
 	}
 
 	.terms-text {
-		font-size: 28rpx;
-		color: #666;
+		@include text-style(28rpx, #666);
 	}
 
 	.terms-link {
-		font-size: 28rpx;
-		color: #1296DB;
+		@include text-style(28rpx, #1296DB);
 	}
 
 	/* 底部按钮 */
 	.payment-buttons {
-		display: flex;
-		align-items: center;
+		@include flex(space-between);
 		height: 100rpx;
 		margin-top: 40rpx;
 		border-top: 1rpx solid #eee;
@@ -815,9 +746,7 @@
 
 	.payment-btn {
 		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex;
 		height: 100%;
 	}
 
@@ -826,12 +755,10 @@
 	}
 
 	.payment-btn-text {
-		font-size: 32rpx;
-		color: #333;
+		@include text-style(32rpx, #333);
 	}
 
 	.confirm-text {
-		color: #FF9500;
-		font-weight: 500;
+		@include text-style(32rpx, #FF9500, 500);
 	}
 </style>
