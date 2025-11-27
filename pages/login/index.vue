@@ -283,6 +283,7 @@ export default {
   justify-content: space-around;
   align-items: center;
   padding: 0 10rpx;
+  margin-left: 100rpx;
 }
 
 .eye {
