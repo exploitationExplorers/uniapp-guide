@@ -74,7 +74,6 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello',
 				dataObj: {},
 				arrayList: [], // 完整数据
 				displayList: [], // 显示的数据
