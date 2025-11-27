@@ -34,13 +34,21 @@
         <text class="label">登录密码</text>
         <input
           class="input"
-          type="text" password placeholder="请输入密码" v-model="form.password" />
+          type="text"
+          password
+          placeholder="请输入密码"
+          v-model="form.password" />
       </view>
 
       <!-- 确认密码 -->
       <view class="form-item">
         <text class="label">确认密码</text>
-        <input class="input" password type="text" placeholder="请确认密码" v-model="form.confirmPassword"/>
+        <input
+          class="input"
+          password
+          type="text"
+          placeholder="请确认密码"
+          v-model="form.confirmPassword" />
       </view>
 
       <!-- 姓名 -->
@@ -124,7 +132,7 @@ export default {
         console.log(res);
         if (res.data && res.data.success) {
           uni.showToast({ title: "验证码已发送", icon: "none" });
-
+          this.form.code = res.data.message;
           this.isCounting = true;
           this.countdown = 60;
           this.timer = setInterval(() => {
