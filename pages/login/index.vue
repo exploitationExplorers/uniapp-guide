@@ -276,26 +276,24 @@ export default {
 
 /* Logo 样式模拟 */
 .logo {
-  width: 160rpx;
-  height: 160rpx;
   border-radius: 50% 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  margin-bottom: 120rpx;
+  margin-bottom: 60rpx;
 }
 
 .logo-face {
-  width: 100%;
-  height: 100%;
-  background-color: #fff;
+  width: 400rpx;
+  height: 260rpx;
   border-radius: 30rpx;
   /* transform: rotate(45deg); */
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 0 10rpx;
+  margin-left: 100rpx;
 }
 
 .eye {
