@@ -3,7 +3,7 @@
 		<camera :device-position="devicePosition" flash="auto" @error="onCameraError"
 			style="width: 100%; height: 70vh;"></camera>
 		<button class="capture-btn" @click="takePhoto">拍照</button>
-		<image v-if="tempImagePath" :src="tempImagePath" style="width: 100%; height: 30vh; margin-top: 20rpx;"></image>
+		<!-- <image v-if="tempImagePath" :src="tempImagePath" style="width: 100%; height: 30vh; margin-top: 20rpx;"></image> -->
 		<canvas canvas-id="watermarkCanvas" :style="{ 
 			width: canvasWidth + 'px', 
 			height: canvasHeight + 'px', 
