@@ -34,21 +34,13 @@
         <text class="label">登录密码</text>
         <input
           class="input"
-          type="password"
-		  password
-          placeholder="请输入密码"
-          v-model="form.password" />
+          type="text" password placeholder="请输入密码" v-model="form.password" />
       </view>
 
       <!-- 确认密码 -->
       <view class="form-item">
         <text class="label">确认密码</text>
-        <input
-          class="input"
-          type="password"
-		  password
-          placeholder="请确认密码"
-          v-model="form.confirmPassword" />
+        <input class="input" password type="text" placeholder="请确认密码" v-model="form.confirmPassword"/>
       </view>
 
       <!-- 姓名 -->

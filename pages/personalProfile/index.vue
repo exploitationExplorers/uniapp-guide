@@ -333,7 +333,7 @@
 			},
 			changePassword() {
 				uni.navigateTo({
-					url: `/pages/changePassword/index?phone=${this.userInfo.phone}`,
+					url: `/pages/changePassword/index?phone=${this.userInfo.phone || ''}`,
 					fail: () => {
 						uni.showToast({
 							title: '跳转失败',
