@@ -18,7 +18,18 @@
 			<!-- 手机号 -->
 			<view class="form-item">
 				<text class="form-label">手机号</text>
-				<text class="form-value">{{ phoneNumber  }}</text>
+				<text 
+					class="form-value" 
+					v-if="!allowPhoneInput"
+				>{{ phoneNumber }}</text>
+				<input 
+					v-else
+					class="form-input" 
+					v-model="phoneNumber" 
+					placeholder="请输入手机号"
+					type="number"
+					maxlength="11"
+				/>
 			</view>
 
 			<!-- 验证码 -->
@@ -84,6 +95,7 @@
 		data() {
 			return {
 				phoneNumber: '', // 从用户信息获取
+				allowPhoneInput: false,
 				verificationCode: '',
 				oldPassword: '',
 				newPassword: '',
@@ -96,6 +108,11 @@
 			// 可以从上一页传递手机号
 			if (options.phone) {
 				this.phoneNumber = options.phone || ''
+			}
+
+			// 如果仍然没有获取到手机号，允许手动输入
+			if (!this.phoneNumber) {
+				this.allowPhoneInput = true
 			}
 		},
 		onUnload() {
@@ -110,6 +127,15 @@
 			},
 			getVerificationCode() {
 				if (this.countdown > 0) {
+					return
+				}
+
+				if (!this.phoneNumber) {
+					uni.showToast({
+						title: '请输入手机号',
+						icon: 'none'
+					})
+					this.allowPhoneInput = true
 					return
 				}
 				
@@ -161,6 +187,15 @@
 			},
 			submit() {
 				// 表单验证
+				if (!this.phoneNumber) {
+					uni.showToast({
+						title: '请输入手机号',
+						icon: 'none'
+					})
+					this.allowPhoneInput = true
+					return
+				}
+
 				if (!this.verificationCode) {
 					uni.showToast({
 						title: '请输入验证码',
@@ -319,7 +354,7 @@
 
 	/* 内容区域 */
 	.content {
-		margin-top: calc(var(--status-bar-height, 44rpx) + 88rpx);
+		
 		background-color: #fff;
 		padding: 0 40rpx;
 	}
