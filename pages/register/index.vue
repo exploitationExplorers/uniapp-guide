@@ -34,13 +34,21 @@
         <text class="label">登录密码</text>
         <input
           class="input"
-          type="text" password placeholder="请输入密码" v-model="form.password" />
+          type="text"
+          password
+          placeholder="请输入密码"
+          v-model="form.password" />
       </view>
 
       <!-- 确认密码 -->
       <view class="form-item">
         <text class="label">确认密码</text>
-        <input class="input" password type="text" placeholder="请确认密码" v-model="form.confirmPassword"/>
+        <input
+          class="input"
+          password
+          type="text"
+          placeholder="请确认密码"
+          v-model="form.confirmPassword" />
       </view>
 
       <!-- 姓名 -->
@@ -80,6 +88,7 @@
 
 <script>
 import { register, getCode } from "@/request/api/index.js";
+import { createValidator } from "@/Plugin/vailate.js";
 export default {
   data() {
     return {
@@ -124,7 +133,7 @@ export default {
         console.log(res);
         if (res.data && res.data.success) {
           uni.showToast({ title: "验证码已发送", icon: "none" });
-
+          this.form.code = res.data.message;
           this.isCounting = true;
           this.countdown = 60;
           this.timer = setInterval(() => {
@@ -165,34 +174,32 @@ export default {
         return uni.showToast({ title: "请先同意使用条款", icon: "none" });
       }
 
-      const { phone, code, password, confirmPassword, name } = this.form;
+      const validator = createValidator();
+      const result = validator
+        .field("phone", { required: true, phone: true })
+        .field("code", { required: true })
+        .field("password", { required: true })
+        .field("confirmPassword", { 
+          required: true, 
+          custom: {
+            validator: (val, form) => val === form.password,
+            message: "两次输入的密码不一致"
+          }
+        })
+        .field("name", { required: true })
+        .validate(this.form);
 
-      // 2. 必填项校验
-      if (!phone) return uni.showToast({ title: "请输入手机号", icon: "none" });
-      if (!code) return uni.showToast({ title: "请输入验证码", icon: "none" });
-      if (!password)
-        return uni.showToast({ title: "请输入登录密码", icon: "none" });
-      if (!confirmPassword)
-        return uni.showToast({ title: "请输入确认密码", icon: "none" });
-      if (!name) return uni.showToast({ title: "请输入姓名", icon: "none" });
-
-      // 3. 格式与逻辑校验
-      const phoneReg = /^1[3-9]\d{9}$/;
-      if (!phoneReg.test(phone)) {
-        return uni.showToast({ title: "手机号格式不正确", icon: "none" });
+      if (!result.isValid) {
+        return uni.showToast({ title: result.firstError, icon: "none" });
       }
 
-      if (password !== confirmPassword) {
-        return uni.showToast({ title: "两次输入的密码不一致", icon: "none" });
-      }
-
-      // 4. 发起请求
+      // 3. 发起请求
       uni.showLoading({ title: "注册中..." });
       await register({
-        phone,
-        code,
-        password,
-        name,
+        phone: this.form.phone,
+        code: this.form.code,
+        password: this.form.password,
+        name: this.form.name,
       }).then((res) => {
         console.log(res.data);
         uni.hideLoading();

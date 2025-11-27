@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="index_images">
-			<image class="index-background" src="/static/pic_01.webp"></image>
+			<image class="index-background" src="/static/pic_01.png"></image>
 			<view class="total-data">
 				<view class="lefts">
 					<view class="items">
@@ -74,7 +74,6 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello',
 				dataObj: {},
 				arrayList: [], // 完整数据
 				displayList: [], // 显示的数据
@@ -89,11 +88,11 @@
 		async onLoad() {
 			const app = getApp()
 			const params1 = {}
-			// if(!app.globalData.token){
-			// 	uni.redirectTo({
-			// 		url:"/pages/featureIntro/index"
-			// 	})
-			// }
+			if(!app.globalData.token){
+				uni.redirectTo({
+					url:"/pages/featureIntro/index"
+				})
+			}
 			const res = await getIndex(params1)
 			if (res) {
 				this.dataObj = res
@@ -102,8 +101,8 @@
 				url: 'https://m1.apifoxmock.com/m1/6729370-6440575-default/api/tasklist',
 				method: 'POST',
 				data: {
-					usename: "chuxin",
-					password: "12345678"
+					usename: app.globalData.userInfo.usename,
+					password: app.globalData.userInfo.password
 				},
 				success: (res) => {
 					this.arrayList = res.data || [];

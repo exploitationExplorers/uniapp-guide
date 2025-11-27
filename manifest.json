@@ -55,6 +55,7 @@
             "urlCheck" : false,
             "es6" : false
         },
+        "libVersion" : "latest",
         "usingComponents" : true,
         "permission" : {
             "scope.userLocation" : {
