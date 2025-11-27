@@ -2,13 +2,13 @@
 	<view style="width: 100%;">
 		<view class="user-avatar">
 			<view class="avatar_background">
-				<image class="imgs" src="/static/pic_01.webp"></image>
+				<image class="imgs" src="/static/pic_01.png"></image>
 			</view>
 			<view class="avatar">
 				<view class="use_images">
-					<image src="" mode=""></image>
+					<image :src="imgUrl" mode=""></image>
 				</view>
-				<text class="useName">{{useId}}</text>
+				<text class="useName">尊敬的：{{useId}}，{{time_period}}好</text>
 			</view>
 		</view>
 		<view class="personalCenterLink">
@@ -25,7 +25,9 @@
 	export default {
 		data() {
 			return {
-				useId: "初心哥万岁",
+				useId: "",
+				time_period: "",
+				imgUrl:"",
 				addres: [{
 						icon: "/static/pic_02.png",
 						key: '个人资料',
@@ -59,7 +61,24 @@
 				]
 			}
 		},
+		onLoad() {
+			const app = getApp()
+			console.log(app)
+			this.useId = app.globalData.userInfo.usename
+			this.imgUrl = app.globalData.userInfo.images
+			this.setTimePeriod()
+		},
 		methods: {
+			setTimePeriod() {
+				const hour = new Date().getHours()
+				if (hour >= 5 && hour < 12) {
+					this.time_period = "上午"
+				} else if (hour >= 12 && hour < 18) {
+					this.time_period = "下午"
+				} else {
+					this.time_period = "晚上"
+				}
+			},
 			linkRedirection(val, item) {
 				if (!val) {
 					uni.showModal({
@@ -73,7 +92,7 @@
 								// 	method: 'POST',
 								// 	data: {},
 								// 	success: (res) => {
-								// 		this.dataObj = res.data
+									
 								// 	}
 								// });
 							} else if (res.cancel) {

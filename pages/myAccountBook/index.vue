@@ -35,29 +35,29 @@
 			<view class="content-flex">
 				<view class="datas">
 					<text>现付总额</text>
-					<text>{{particular['cashPaymentTotal ']}}</text>
+					<text>{{particular['cashPaymentTotal ']}}元</text>
 				</view>
 				<view class="datas">
 					<text>收入总额</text>
-					<text>{{particular['incomeTotal ']}}</text>
+					<text>{{particular['incomeTotal ']}}元</text>
 				</view>
 				<view class="datas">
 					<text>交回总额</text>
-					<text>{{particular['returnTotal ']}}</text>
+					<text>{{particular['returnTotal ']}}元</text>
 				</view>
 			</view>
 			<view class="settlement-amount">
 				<text>结账总额</text>
-				<text>{{particular['settlementTotal ']}}</text>
+				<text>{{particular['settlementTotal ']}}元</text>
 			</view>
 			<view class="paid">
 				<view class="lists">
 					<text>已结账</text>
-					<text>{{particular['settledAmount ']}}</text>
+					<text>{{particular['settledAmount ']}}元</text>
 				</view>
 				<view class="lists">
 					<text>未结账</text>
-					<text>{{particular['outstandingAmount ']}}</text>
+					<text>{{particular['outstandingAmount ']}}元</text>
 				</view>
 			</view>
 		</view>
