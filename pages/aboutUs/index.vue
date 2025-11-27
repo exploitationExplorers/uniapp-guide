@@ -22,7 +22,7 @@
       </view>
 
       <!-- 当前服务器节点 -->
-      <view class="list-item">
+      <view class="list-item" @click="changeNodeServer">
         <text class="item-title">当前服务器节点</text>
         <text class="item-value">{{ nodeServer }}</text>
       </view>
@@ -62,7 +62,23 @@ export default {
 					}
 				}
 			});
-    }
+    },
+    changeNodeServer() {
+			uni.showModal({
+				title: '需要切换服务器节点？',
+				content: '当前连接服务器节点为：默认服务器节点 切换服务器节点需要先退出登录，然后在登录前选择服务器节点进行切换。',
+				showCancel: true,
+				cancelText: '取消',
+				confirmText: '确定',
+				success: (res) => {
+					if (res.confirm) {
+						uni.navigateTo({
+							url: '/pages/login/index'
+						})
+					}
+				}
+			});
+		}
   }
 }
 </script>
