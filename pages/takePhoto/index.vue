@@ -1,7 +1,7 @@
 <template>
 	<view class="container">
 		<camera :device-position="devicePosition" flash="auto" @error="onCameraError"
-			style="width: 100%; height: 70vh;"></camera>
+			style="width: 100%; height: 80vh;"></camera>
 		<button class="capture-btn" :disabled="isCapturing" @click="takePhoto">
 			{{ isCapturing ? '处理中...' : '拍照' }}
 		</button>
@@ -264,7 +264,7 @@
 		flex-direction: column;
 		align-items: center;
 		height: 100vh;
-		background: #000;
+		background: #fff;
 	}
 
 	.capture-btn {
