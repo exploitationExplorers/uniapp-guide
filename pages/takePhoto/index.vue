@@ -35,6 +35,36 @@
 			this.checkCameraAuthStatus();
 		},
 
+		async onReady() {
+			// 初始化设备信息（非必须，但提升体验）
+			try {
+				const sysInfo = uni.getSystemInfoSync();
+				this.deviceName = sysInfo.model || '未知设备';
+				// 相机参数无法精确获取，可保留固定值或省略
+				this.cameraParams = '主摄 f/1.6'; // 或根据需求动态判断
+			} catch (e) {
+				this.deviceName = '未知设备';
+				this.cameraParams = '未知参数';
+			}
+		},
+
+		async onLoad() {
+			try {
+				// 预请求相册权限
+				await this.checkPhotoAlbumAuth();
+
+				const res = await uni.getLocation({
+					type: 'gcj02'
+				});
+				this.location = {
+					latitude: parseFloat(res.latitude.toFixed(6)),
+					longitude: parseFloat(res.longitude.toFixed(6))
+				};
+			} catch (err) {
+				console.log('位置获取失败:', err.errMsg);
+			}
+		},
+
 		methods: {
 			// 检查摄像头权限状态
 			async checkCameraAuthStatus() {
@@ -118,6 +148,7 @@
 					return;
 				}
 
+				this.isCapturing = true;
 				const ctx = uni.createCameraContext(this);
 				ctx.takePhoto({
 					quality: 'high',
@@ -126,6 +157,7 @@
 					},
 					fail: (err) => {
 						console.error('拍照失败:', err);
+						this.isCapturing = false;
 						// 如果是权限问题，更新状态
 						if (err.errMsg.includes('permission') || err.errMsg.includes('auth')) {
 							this.hasCameraAuth = false;
@@ -179,6 +211,150 @@
 					this.hasCameraAuth = false;
 					this.showCameraAuthGuide();
 				}
+			},
+
+			// ========== 水印相关方法 ==========
+			async addWatermark(imagePath) {
+				try {
+					uni.showLoading({
+						title: '处理中...',
+						mask: true
+					});
+
+					const now = new Date();
+					const timeStr =
+						`${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+					let coordText = '位置未获取';
+					if (this.location) {
+						const latDMS = this.toDMS(this.location.latitude, true);
+						const lngDMS = this.toDMS(this.location.longitude, false);
+						coordText = `${latDMS} ${lngDMS}`;
+					}
+
+					const imgInfo = await new Promise((resolve, reject) => {
+						uni.getImageInfo({
+							src: imagePath,
+							success: resolve,
+							fail: reject
+						});
+					});
+
+					const {
+						width,
+						height
+					} = imgInfo;
+					const watermarkHeight = 80;
+					this.canvasWidth = width;
+					this.canvasHeight = height + watermarkHeight;
+
+					await new Promise(resolve => setTimeout(resolve, 100));
+
+					const ctx = uni.createCanvasContext('watermarkCanvas', this);
+
+					ctx.drawImage(imagePath, 0, 0, width, height);
+
+					// 定义参数
+					const topMargin = 15;
+					const leftMargin = 50;
+					const rightMargin = width - 50;
+					const watermarkStartY = height + topMargin;
+					const fontSize = 22;
+					const lineHeight = 32;
+					const firstLineY = watermarkStartY + 12;
+					const secondLineY = firstLineY + lineHeight;
+
+					// 绘制水印背景
+					ctx.setFillStyle('rgba(255, 255, 255, 0.95)');
+					ctx.fillRect(0, watermarkStartY, width, watermarkHeight);
+
+					// 设置文字样式
+					ctx.setFillStyle('#333333');
+					ctx.setFontSize(fontSize);
+					ctx.setTextBaseline('top');
+
+					// 左侧信息
+					ctx.setTextAlign('left');
+					ctx.fillText(this.deviceName, leftMargin, firstLineY);
+					ctx.fillText(timeStr, leftMargin, secondLineY);
+
+					// 中间Logo
+					ctx.setTextAlign('center');
+					const logoUrl = '/static/about.png';
+					const logoSize = 40;
+					const logoX = width / 2 - logoSize / 2;
+					const logoY = watermarkStartY + 15;
+					ctx.drawImage(logoUrl, logoX, logoY, logoSize, logoSize);
+
+					// 右侧信息
+					ctx.setTextAlign('right');
+					ctx.setFontSize(fontSize);
+					ctx.fillText(this.cameraParams, rightMargin, firstLineY);
+					ctx.fillText(coordText, rightMargin, secondLineY);
+
+					// 绘制到Canvas
+					await new Promise((resolve) => {
+						ctx.draw(true, () => {
+							resolve();
+						});
+					});
+
+					await new Promise(resolve => setTimeout(resolve, 300));
+
+					// 导出图片
+					const canvasRes = await new Promise((resolve, reject) => {
+						uni.canvasToTempFilePath({
+							canvasId: 'watermarkCanvas',
+							width: this.canvasWidth,
+							height: this.canvasHeight,
+							destWidth: this.canvasWidth,
+							destHeight: this.canvasHeight,
+							fileType: 'jpg',
+							quality: 1,
+							success: resolve,
+							fail: reject
+						}, this);
+					});
+
+					// 保存到相册
+					await uni.saveImageToPhotosAlbum({
+						filePath: canvasRes.tempFilePath
+					});
+
+					uni.hideLoading();
+					this.isCapturing = false;
+					uni.showToast({
+						title: '已保存至相册',
+						icon: 'success',
+						duration: 2000
+					});
+
+				} catch (err) {
+					uni.hideLoading();
+					this.isCapturing = false;
+					if (err.errMsg && err.errMsg.includes('auth deny')) {
+						this.showPhotoAlbumAuthGuide();
+					} else {
+						uni.showToast({
+							title: '处理失败，请重试',
+							icon: 'none'
+						});
+						console.error('水印处理错误:', err);
+					}
+				}
+			},
+
+			// 经纬度转换方法
+			toDMS(coord, isLatitude) {
+				const direction = isLatitude ?
+					(coord >= 0 ? 'N' : 'S') :
+					(coord >= 0 ? 'E' : 'W');
+				const absCoord = Math.abs(coord);
+				const degrees = Math.floor(absCoord);
+				const minutes = Math.floor((absCoord - degrees) * 60);
+				const seconds = ((absCoord - degrees - minutes / 60) * 3600).toFixed(1);
+
+				return `${degrees}°${minutes}'${seconds}"${direction}`;
 			}
 		}
 	}
@@ -202,5 +378,10 @@
 		color: white;
 		border-radius: 8rpx;
 		font-size: 28rpx;
+	}
+
+	.capture-btn:disabled {
+		background: #cccccc;
+		color: #666666;
 	}
 </style>
