@@ -60,6 +60,7 @@
 
 <script>
 import { getCode, resetPwd } from "@/request/api/index.js";
+import { createValidator } from "@/Plugin/vailate.js";
 export default {
   data() {
     return {
@@ -125,21 +126,22 @@ export default {
     },
     async handleSubmit() {
       const { phone, code, password, confirmPassword } = this.form;
+      const validator = createValidator();
+      const result = validator
+        .field("phone", { required: true, phone: true })
+        .field("code", { required: true })
+        .field("password", { required: true })
+        .field("confirmPassword", {
+          required: true,
+          custom: {
+            validator: (val, form) => val === form.password,
+            message: "两次输入的密码不一致",
+          },
+        })
+        .validate(this.form);
 
-      if (!phone) return uni.showToast({ title: "请输入手机号", icon: "none" });
-      if (!code) return uni.showToast({ title: "请输入验证码", icon: "none" });
-      if (!password)
-        return uni.showToast({ title: "请输入登录密码", icon: "none" });
-      if (!confirmPassword)
-        return uni.showToast({ title: "请输入确认密码", icon: "none" });
-
-      const phoneReg = /^1[3-9]\d{9}$/;
-      if (!phoneReg.test(phone)) {
-        return uni.showToast({ title: "手机号格式不正确", icon: "none" });
-      }
-
-      if (password !== confirmPassword) {
-        return uni.showToast({ title: "两次输入的密码不一致", icon: "none" });
+      if (!result.isValid) {
+        return uni.showToast({ title: result.firstError, icon: "none" });
       }
 
       uni.showLoading({ title: "提交中..." });

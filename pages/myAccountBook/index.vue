@@ -31,38 +31,36 @@
 				<text v-for="(item, index) in dataObj" :key="index" @click="toggleData(item.name)">{{ item.name }}</text>
 			</view>
 		</view>
-
-		<view class="content">
-			<view class="content-flex">
-				<view class="datas">
-					<text>现付总额</text>
-					<text>{{ (particular.cashPaymentTotal || 0) }}元</text>
-				</view>
-				<view class="datas">
-					<text>收入总额</text>
-					<text>{{ (particular.incomeTotal || 0) }}元</text>
-				</view>
-				<view class="datas">
-					<text>交回总额</text>
-					<text>{{ (particular.returnTotal || 0) }}元</text>
-				</view>
-			</view>
-			<view class="settlement-amount">
-				<text>结账总额</text>
-				<text>{{ (particular.settlementTotal || 0) }}元</text>
-			</view>
-			<view class="paid">
-				<view class="lists">
-					<text>已结账</text>
-					<text>{{ (particular.settledAmount || 0) }}元</text>
-				</view>
-				<view class="lists">
-					<text>未结账</text>
-					<text>{{ (particular.outstandingAmount || 0) }}元</text>
-				</view>
-			</view>
+<view class="content">
+	<view class="content-flex">
+		<view class="datas">
+			<text>现付总额</text>
+			<text>{{ particular.cashPaymentTotal != null ? particular.cashPaymentTotal : 0 }}元</text>
 		</view>
-
+		<view class="datas">
+			<text>收入总额</text>
+			<text>{{ particular.incomeTotal != null ? particular.incomeTotal : 0 }}元</text>
+		</view>
+		<view class="datas">
+			<text>交回总额</text>
+			<text>{{ particular.returnTotal != null ? particular.returnTotal : 0 }}元</text>
+		</view>
+	</view>
+	<view class="settlement-amount">
+		<text>结账总额</text>
+		<text>{{ particular.settlementTotal != null ? particular.settlementTotal : 0 }}元</text>
+	</view>
+	<view class="paid">
+		<view class="lists">
+			<text>已结账</text>
+			<text>{{ particular.settledAmount != null ? particular.settledAmount : 0 }}元</text>
+		</view>
+		<view class="lists">
+			<text>未结账</text>
+			<text>{{ particular.outstandingAmount != null ? particular.outstandingAmount : 0 }}元</text>
+		</view>
+	</view>
+</view>
 		<view class="data_lists">
 			<view class="list" v-for="(item, index) in dataLists" :key="index" @click="linkUrl(item.id)">
 				<view class="title">{{ item.tourist_destination }}</view>

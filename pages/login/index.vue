@@ -28,7 +28,7 @@
             placeholder="请输入手机号"
             placeholder-style="color: rgba(255, 255, 255, 0.7)"
             placeholder-class="placeholder-text"
-            v-model="phone" />
+            v-model="form.phone" />
         </view>
 
         <!-- 密码输入 -->
@@ -41,7 +41,7 @@
             placeholder="请输入密码"
             placeholder-style="color: rgba(255, 255, 255, 0.7)"
             placeholder-class="placeholder-text"
-            v-model="password" />
+            v-model="form.password" />
           <!-- <view class="icon eye-icon" @click="togglePassword"></view> -->
           <image
             class="icon eye-icon"
@@ -101,11 +101,14 @@
 
 <script>
 import { login } from "@/request/api/index.js";
+import { createValidator } from "@/Plugin/vailate.js";
 export default {
   data() {
     return {
-      phone: "",
-      password: "",
+      form: {
+        phone: "",
+        password: "",
+      },
       showPassword: false,
       showPopup: false,
       activeNodeIndex: 0,
@@ -155,51 +158,58 @@ export default {
       this.showPassword = !this.showPassword;
     },
     async handleLogin() {
-      // 手机号为空
-      if (!this.phone) {
-        return uni.showToast({
-          title: "请输入手机号",
-          icon: "none",
-        });
+      // // 手机号为空
+      // if (!this.phone) {
+      //   return uni.showToast({
+      //     title: "请输入手机号",
+      //     icon: "none",
+      //   });
+      // }
+
+      // // 校验手机号格式（非必填逻辑可选）
+      // const phoneReg = /^1[3-9]\d{9}$/;
+      // if (!phoneReg.test(this.phone)) {
+      //   return uni.showToast({
+      //     title: "手机号格式不正确",
+      //     icon: "none",
+      //   });
+      // }
+
+      // // 密码为空
+      // if (!this.password) {
+      //   return uni.showToast({
+      //     title: "请输入密码",
+      //     icon: "none",
+      //   });
+      // }
+
+      // // 密码校验（可选，例如长度 > 6）
+      // if (this.password.length < 6) {
+      //   return uni.showToast({
+      //     title: "密码不能少于6位",
+      //     icon: "none",
+      //   });
+      // }
+      const validator = createValidator();
+      const result = validator
+        .field("phone", { required: true, phone: true })
+        .field("password", { required: true })
+        .validate(this.form);
+
+      if (!result.isValid) {
+        return uni.showToast({ title: result.firstError, icon: "none" });
       }
 
-      // 校验手机号格式（非必填逻辑可选）
-      const phoneReg = /^1[3-9]\d{9}$/;
-      if (!phoneReg.test(this.phone)) {
-        return uni.showToast({
-          title: "手机号格式不正确",
-          icon: "none",
+      let res = await login({
+        phone: this.form.phone,
+        password: this.form.password,
+      });
+      if (res.success) {
+        getApp().globalData.userInfo = res.userInfo;
+        getApp().globalData.token = res.token;
+        uni.switchTab({
+          url: "/pages/index/index",
         });
-      }
-
-      // 密码为空
-      if (!this.password) {
-        return uni.showToast({
-          title: "请输入密码",
-          icon: "none",
-        });
-      }
-
-      // 密码校验（可选，例如长度 > 6）
-      if (this.password.length < 6) {
-        return uni.showToast({
-          title: "密码不能少于6位",
-          icon: "none",
-        });
-      }
-
-      if (this.phone && this.password) {
-        let res = await login({
-          phone: this.phone,
-          password: this.password,
-        });
-        if (res.success) {
-          getApp().globalData.userInfo = res.userInfo;
-          getApp().globalData.token = res.token;
-          uni.switchTab({
-            url: "/pages/index/index",
-          });
-        }
       }
     },
     goToRegister() {
@@ -224,23 +234,18 @@ export default {
 .login-page {
   min-height: 100vh;
   position: relative;
-  background: 
-    radial-gradient(
+  background: radial-gradient(
       ellipse 40% 60% at 100% 55%,
       #e4f0d8 0%,
       rgba(179, 226, 206, 0) 70%
     ),
-    radial-gradient(
-      circle at 0% 100%,
-      #e4f0d8 0%,
-      rgba(211, 236, 216, 0) 25%
-    ),
+    radial-gradient(circle at 0% 100%, #e4f0d8 0%, rgba(211, 236, 216, 0) 25%),
     linear-gradient(
       135deg,
       #5a8fa8 0%,
       #6eb3c4 25%,
       #82c9d0 50%,
-     
+
       #7ce5d4 100%
     );
   display: flex;
