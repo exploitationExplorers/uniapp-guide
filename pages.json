@@ -1,10 +1,11 @@
 {
-	"pages": [{
+	"pages": [		{
 			"path": "pages/index/index",
 			"style": {
 				"enablePullDownRefresh": false,
-				"onReachBottomDistance": 50,
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "设备维保",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
@@ -68,7 +69,10 @@
 		{
 			"path": "pages/login/index",
 			"style": {
-				"navigationBarTitleText": "登录"
+				"navigationBarTitleText": "设备维保系统",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -96,6 +100,14 @@
 				"navigationBarBackgroundColor": "#1296DB",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path": "pages/maintenance/index",
+			"style": {
+				"navigationBarTitleText": "设备维保",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"uniIdRouter": {
@@ -103,12 +115,12 @@
 	},
 	"tabBar": {
 		"color": "#999999",
-		"selectedColor": "#007AFF",
+		"selectedColor": "#1890ff",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
 		"list": [{
 				"pagePath": "pages/index/index",
-				"text": "首页",
+				"text": "设备维保",
 				"iconPath": "/static/home.png",
 				"selectedIconPath": "/static/home.png"
 			},

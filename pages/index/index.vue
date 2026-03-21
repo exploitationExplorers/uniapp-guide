@@ -1,355 +1,289 @@
 <template>
-	<view class="content">
-		<view class="index_images">
-			<image class="index-background" src="/static/pic_01.png"></image>
-			<view class="total-data">
-				<view class="lefts">
-					<view class="items">
-						<text>总团量</text>
-						<text>{{dataObj.team_size}}</text>
-					</view>
-					<view class="items">
-						<text>总收入</text>
-						<text>{{dataObj.income}}元</text>
-					</view>
-				</view>
-				<view class="right">
-					<view class="items">
-						<text>今年收入</text>
-						<text>{{dataObj.revenue}}元</text>
-					</view>
-					<view class="items">
-						<text>本月收入</text>
-						<text>{{dataObj.month_income}}元</text>
-					</view>
-				</view>
-			</view>
-		</view>
+  <view class="container">
+    <view class="header">
+      <text class="title">选择维保设备</text>
+    </view>
+    
+    <view class="tab-box">
+      <view class="tab-item" :class="{active: currentTab === 0}" @click="currentTab = 0">附近设备</view>
+      <view class="tab-item" :class="{active: currentTab === 1}" @click="currentTab = 1">手动输入</view>
+    </view>
 
-		<!-- 列表区域 - 使用 scroll-view -->
-		<scroll-view class="list-scroll" scroll-y :style="{ height: scrollHeight + 'px' }" @scrolltolower="loadMoreData"
-			:refresher-enabled="false">
-			<view class="list">
-				<view class="listRow" v-for="(item,index) in displayList" :key="index">
-					<view :class="['left',item.code == 1 ? 'active' : 'notActive']">
-						<text v-if="item.code == 1">已完团</text>
-						<text v-else>未完团</text>
-					</view>
-					<view class="right">
-						<view class="rightTitle">
-							<text class="tit">
-								<{{item.projectname}}>
-							</text>
-							<text>{{item.premium_group}}</text>
-						</view>
-						<view class="flexs_row">
-							<text>团号：{{item.teamn_umber}}</text>
-							<text v-if="item.awaiting_filing == 0" class="active">待审核</text>
-							<text v-else class="notActive">财务审核</text>
-						</view>
-						<view class="times">
-							<text>出团时间：{{item.tart_time}}</text>
-							<text>完团时间：{{item.end_time}}</text>
-						</view>
-						<view class="monet">收入：{{item.earnings | toFixed(1)}}元</view>
-					</view>
-				</view>
+    <!-- 附近设备 -->
+    <view class="content-box" v-if="currentTab === 0">
+      <view class="location-info">
+        <text class="loc-text">当前位置: {{ locationText }}</text>
+        <button class="refresh-btn" size="mini" @click="getLocation">刷新定位</button>
+      </view>
+      
+      <scroll-view class="equipment-list" scroll-y>
+        <view class="equipment-item" v-for="(item, index) in nearbyEquipments" :key="index">
+          <view class="eq-info">
+            <view class="eq-name">{{ item.name }} <text class="eq-code">({{ item.code }})</text></view>
+            <view class="eq-dist">距离: {{ item.distance }}m</view>
+            <view class="eq-addr">地址: {{ item.address }}</view>
+          </view>
+          <button class="maintain-btn" size="mini" @click="goToMaintenance(item)">去维保</button>
+        </view>
+        <view v-if="nearbyEquipments.length === 0" class="empty-tip">暂无附近设备</view>
+      </scroll-view>
+    </view>
 
-				<!-- 加载状态 -->
-				<view class="load-more">
-					<text v-if="loading">加载中...</text>
-					<text v-else-if="!hasMore && displayList.length > 0">没有更多数据了</text>
-					<text v-else-if="displayList.length === 0">暂无数据</text>
-				</view>
-			</view>
-		</scroll-view>
-	</view>
+    <!-- 手动输入 -->
+    <view class="content-box" v-if="currentTab === 1">
+      <view class="search-box">
+        <input class="search-input" v-model="searchCode" placeholder="请输入设备编号 (如: XFS7318)" />
+        <button class="search-btn" size="mini" @click="searchEquipment">查询</button>
+      </view>
+      
+      <view class="equipment-item mt-20" v-if="searchedEquipment">
+        <view class="eq-info">
+          <view class="eq-name">{{ searchedEquipment.name }} <text class="eq-code">({{ searchedEquipment.code }})</text></view>
+          <view class="eq-addr">地址: {{ searchedEquipment.address }}</view>
+        </view>
+        <button class="maintain-btn" size="mini" @click="goToMaintenance(searchedEquipment)">去维保</button>
+      </view>
+      <view v-else-if="hasSearched" class="empty-tip">未找到相关设备</view>
+    </view>
+  </view>
 </template>
 
 <script>
-	import {
-		getIndex,
-		getIndexList
-	} from '@/request/api/index.js'
-	export default {
-		data() {
-			return {
-				dataObj: {},
-				arrayList: [], // 完整数据
-				displayList: [], // 显示的数据
-				pageSize: 2, // 每次加载5条
-				currentPage: 1,
-				hasMore: true,
-				loading: false, // 添加加载状态
-				isLoading: false, // 防止重复加载
-				scrollHeight: 400 // 滚动区域高度，会在onReady中动态计算
-			}
-		},
-		async onLoad() {
-			const app = getApp()
-			const params1 = {}
-			if(!app.globalData.token){
-				uni.redirectTo({
-					url:"/pages/featureIntro/index"
-				})
-			}
-			const res = await getIndex(params1)
-			if (res) {
-				this.dataObj = res
-			}
-			uni.request({
-				url: 'https://m1.apifoxmock.com/m1/6729370-6440575-default/api/tasklist',
-				method: 'POST',
-				data: {
-					usename: app.globalData.userInfo.usename,
-					password: app.globalData.userInfo.password
-				},
-				success: (res) => {
-					this.arrayList = res.data || [];
-					this.loadMoreData();
-				},
-			});
-		},
-		onReady() {
-			this.calculateScrollHeight();
-		},
-		methods: {
-			calculateScrollHeight() {
-				const query = uni.createSelectorQuery().in(this);
-				query.select('.content').boundingClientRect(data => {
-					if (data) {
-						uni.getSystemInfo({
-							success: (res) => {
-								const windowHeight = res.windowHeight;
-								const imageHeight = 400;
-								const imageHeightPx = imageHeight / 2;
-								this.scrollHeight = windowHeight - imageHeightPx - 20;
-								console.log('scrollHeight:', this.scrollHeight);
-							}
-						});
-					}
-				}).exec();
-			},
-
-			async loadMoreData() {
-				if (this.isLoading || !this.hasMore) {
-					return
-				}
-
-				this.loading = true
-				this.isLoading = true
-
-				const startIndex = (this.currentPage - 1) * this.pageSize
-				const endIndex = startIndex + this.pageSize
-				const newData = this.arrayList.slice(startIndex, endIndex)
-				if (newData.length > 0) {
-					this.displayList = [...this.displayList, ...newData];
-					this.currentPage++
-					if (endIndex >= this.arrayList.length) {
-						this.hasMore = false
-					}
-				} else {
-					this.hasMore = false
-				}
-
-				this.loading = false
-				this.isLoading = false
-			}
-		},
-		filters: {
-			toFixed(value, digits) {
-				if (value === null || value === undefined) return '0.0';
-				return Number(value).toFixed(digits);
-			}
-		}
-	}
+export default {
+  data() {
+    return {
+      currentTab: 0,
+      locationText: "正在获取位置...",
+      longitude: 0,
+      latitude: 0,
+      searchCode: "",
+      searchedEquipment: null,
+      hasSearched: false,
+      nearbyEquipments: []
+    }
+  },
+  onLoad() {
+    const app = getApp();
+    if (!app.globalData.token) {
+      uni.redirectTo({ url: '/pages/featureIntro/index' });
+      return;
+    }
+    this.getLocation();
+  },
+  methods: {
+    getLocation() {
+      this.locationText = "定位中...";
+      uni.getLocation({
+        type: 'gcj02',
+        success: (res) => {
+          this.longitude = res.longitude;
+          this.latitude = res.latitude;
+          this.locationText = `经度:${res.longitude.toFixed(4)}, 纬度:${res.latitude.toFixed(4)}`;
+          this.getNearbyEquipments();
+        },
+        fail: () => {
+          // 在PC微信开发者工具或未授权时，模拟一个定位
+          this.longitude = 120.604984;
+          this.latitude = 30.934464;
+          this.locationText = `经度:120.6050, 纬度:30.9345 (模拟)`;
+          this.getNearbyEquipments();
+        }
+      });
+    },
+    getNearbyEquipments() {
+      // 模拟根据经纬度获取的附近设备，包含题目要求的XFS7318
+      this.nearbyEquipments = [
+        { id: 1, name: "消防栓", code: "XFS7318", distance: 15, address: "苏州市吴江区·南城", lat: 30.934464, lng: 120.604984 },
+        { id: 2, name: "配电箱", code: "PDX1024", distance: 120, address: "苏州市吴江区·北城", lat: 30.935500, lng: 120.606000 },
+        { id: 3, name: "水泵", code: "SB0098", distance: 350, address: "苏州市吴江区·东城", lat: 30.936000, lng: 120.608000 }
+      ];
+    },
+    searchEquipment() {
+      if (!this.searchCode) {
+        return uni.showToast({ title: '请输入设备编号', icon: 'none' });
+      }
+      this.hasSearched = true;
+      // 模拟查询
+      if (this.searchCode.toUpperCase() === 'XFS7318') {
+        this.searchedEquipment = { id: 1, name: "消防栓", code: "XFS7318", address: "苏州市吴江区·南城", lat: 30.934464, lng: 120.604984 };
+      } else {
+        this.searchedEquipment = null;
+      }
+    },
+    goToMaintenance(item) {
+      uni.navigateTo({
+        url: `/pages/maintenance/index?id=${item.id}&code=${item.code}&name=${item.name}&lat=${item.lat}&lng=${item.lng}&addr=${item.address}`
+      });
+    }
+  }
+}
 </script>
-<style scoped lang="scss">
-	.list-scroll {
 
-		::-webkit-scrollbar {
-			display: none;
-			width: 0;
-			height: 0;
-			color: transparent;
-		}
-	}
+<style scoped>
+.container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+}
 
-	.list {
-		padding: 0rpx 20rpx;
-	}
+.header {
+  background-color: #1890ff;
+  padding: 40rpx 30rpx 60rpx;
+}
 
-	::-webkit-scrollbar {
-		display: none;
-		width: 0;
-		height: 0;
-		color: transparent;
-	}
+.title {
+  color: #fff;
+  font-size: 40rpx;
+  font-weight: bold;
+}
 
-	page {
-		height: 100%;
-		background-color: #f6f6f6;
-		-ms-overflow-style: none;
-		scrollbar-width: none;
+.tab-box {
+  display: flex;
+  background-color: #fff;
+  margin: -30rpx 30rpx 20rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  overflow: hidden;
+}
 
-		&::-webkit-scrollbar {
-			display: none;
-			width: 0;
-			height: 0;
-			background: transparent;
-		}
-	}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: 32rpx;
+  color: #666;
+  position: relative;
+}
 
-	.content {
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-	}
+.tab-item.active {
+  color: #1890ff;
+  font-weight: bold;
+}
 
-	.load-more {
-		text-align: center;
-		padding: 30rpx;
-		color: #999;
-		font-size: 28rpx;
-		position: relative;
-	}
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background-color: #1890ff;
+  border-radius: 6rpx;
+}
 
-	.listRow {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		border-radius: 16rpx;
-		margin-top: 30rpx;
-		box-shadow: 0rpx 0rpx 10rpx rgba(0, 0, 0, 0.1);
-		padding: 10rpx;
-		background-color: #fff;
-		min-height: 200rpx;
+.content-box {
+  flex: 1;
+  padding: 0 30rpx;
+}
 
-		.left {
-			background-color: #92B48D;
-			width: auto;
+.location-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 20rpx 30rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
 
-			text {
-				writing-mode: vertical-lr;
-				display: inline-block;
-			}
-		}
+.loc-text {
+  font-size: 26rpx;
+  color: #333;
+}
 
-		.left.active {
-			background-color: #C8CAC7;
-		}
+.refresh-btn {
+  margin: 0;
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
+}
 
-		.right {
-			flex: 1;
-			padding-left: 20rpx;
+.equipment-list {
+  height: calc(100vh - 350rpx);
+}
 
-			>view {
-				margin-top: 6rpx;
-			}
+.equipment-item {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.02);
+}
 
-			.flexs_row {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
+.mt-20 {
+  margin-top: 20rpx;
+}
 
-				>text:nth-child(2) {
-					display: inline-block;
-					margin-right: 20rpx;
-					padding: 6rpx 12rpx;
-					border-radius: 8rpx;
-				}
+.eq-info {
+  flex: 1;
+  margin-right: 20rpx;
+}
 
-				.active {
-					background-color: #92B48D;
-				}
+.eq-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
 
-				.notActive {
-					background-color: #DCDCDC;
-				}
-			}
+.eq-code {
+  font-size: 28rpx;
+  color: #999;
+  font-weight: normal;
+}
 
-			.monet {
-				border-top: 1px solid #f6f6f6;
-				margin-top: 20rpx;
-				padding: 20rpx 0;
-			}
+.eq-dist {
+  font-size: 26rpx;
+  color: #ff9800;
+  margin-bottom: 6rpx;
+}
 
-			.rightTitle {
-				display: flex;
-				justify-content: flex-start;
-				align-items: center;
+.eq-addr {
+  font-size: 24rpx;
+  color: #666;
+}
 
-				.tit {
-					font-size: 32rpx;
-					color: #111;
-				}
-			}
+.maintain-btn {
+  margin: 0;
+  background-color: #1890ff;
+  color: #fff;
+}
 
-			.times {
-				text {
-					display: block;
-				}
+.search-box {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 12rpx;
+}
 
-				>text:nth-child(2) {
-					margin-top: 10rpx;
-				}
-			}
-		}
-	}
+.search-input {
+  flex: 1;
+  height: 70rpx;
+  background-color: #f5f7fa;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+}
 
-	.index_images {
-		position: relative;
-		width: 100%;
-		overflow: hidden;
-		display: flex;
-		flex-wrap: wrap;
+.search-btn {
+  margin: 0;
+  background-color: #1890ff;
+  color: #fff;
+  height: 70rpx;
+  line-height: 70rpx;
+}
 
-		.index-background {
-			width: 100%;
-			height: 400rpx;
-			filter: blur(3px);
-		}
-
-		.text-area {
-			width: 100%;
-		}
-
-		.total-data {
-			position: absolute;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			flex-wrap: wrap;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 85%;
-			height: 100%;
-
-			text {
-				color: #fff;
-				display: block;
-			}
-
-			.lefts {
-				width: 77%;
-
-				.items:nth-child(n+2) {
-					margin-top: 60rpx;
-				}
-			}
-
-			.right {
-				flex: 1;
-
-				.items:nth-child(n+2) {
-					margin-top: 60rpx;
-				}
-
-				text {
-					display: inline-block;
-				}
-			}
-		}
-	}
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+  padding: 60rpx 0;
+}
 </style>

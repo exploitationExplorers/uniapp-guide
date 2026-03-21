@@ -1,24 +1,33 @@
 <template>
-  <view style="width: 100%">
-    <view class="user-avatar">
-      <view class="avatar_background">
-        <image class="imgs" src="/static/pic_01.png"></image>
-      </view>
-      <view class="avatar">
-        <view class="use_images">
-          <image :src="imgUrl" mode=""></image>
+  <view class="page">
+    <!-- 顶部用户卡片 -->
+    <view class="user-card">
+      <view class="user-info">
+        <view class="avatar-box">
+          <text class="avatar-text">{{ nameInitial }}</text>
         </view>
-        <text class="useName">尊敬的：{{ useId }}，{{ time_period }}好</text>
+        <view class="user-detail">
+          <text class="user-name">{{ userName }}，{{ timePeriod }}好</text>
+          <text class="user-role">设备维保人员</text>
+        </view>
       </view>
     </view>
-    <view class="personalCenterLink">
-      <view
-        class="linkList"
-        v-for="(item, index) in addres"
-        :key="index"
-        @click="linkRedirection(item.url, item.key)">
-        <image class="images" :src="item.icon" mode=""></image>
-        <text>{{ item.key }}</text>
+
+    <!-- 功能列表 -->
+    <view class="menu-section">
+      <view class="menu-item" v-for="(item, index) in menuList" :key="index" @click="handleMenu(item)">
+        <text class="menu-icon">{{ item.icon }}</text>
+        <text class="menu-text">{{ item.name }}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- 退出登录 -->
+    <view class="logout-section">
+      <view class="menu-item logout-item" @click="handleLogout">
+        <text class="menu-icon">🚪</text>
+        <text class="menu-text" style="color: #ff4d4f;">退出登录</text>
+        <text class="menu-arrow">›</text>
       </view>
     </view>
   </view>
@@ -28,169 +37,161 @@
 export default {
   data() {
     return {
-      useId: "",
-      time_period: "",
-      imgUrl: "",
-      addres: [
-        {
-          icon: "/static/pic_02.png",
-          key: "个人资料",
-          url: "/pages/personalProfile/index",
-        },
-        {
-          icon: "/static/pic_03.png",
-          key: "我的账本",
-          url: "/pages/myAccountBook/index",
-        },
-        {
-          icon: "/static/pic_04.png",
-          key: "带团统计",
-          url: "/pages/groupStatistics/index",
-        },
-        {
-          icon: "/static/pic_05.png",
-          key: "关于火柴头",
-          url: "/pages/aboutUs/index",
-        },
-        {
-          icon: "/static/pic_11.png",
-          key: "水印相机",
-          url: "/pages/takePhoto/index",
-        },
-        {
-          icon: "/static/pic_06.png",
-          key: "退出登录",
-          url: "",
-        },
-      ],
-    };
+      userName: '',
+      timePeriod: '',
+      menuList: [
+        { icon: '👤', name: '个人资料', url: '/pages/personalProfile/index' },
+        { icon: '📋', name: '维保记录', url: '' },
+        { icon: '🔧', name: '修改密码', url: '/pages/changePassword/index' },
+        { icon: 'ℹ️', name: '关于系统', url: '/pages/aboutUs/index' }
+      ]
+    }
   },
-  onLoad() {
+  computed: {
+    nameInitial() {
+      return this.userName ? this.userName.charAt(0) : '用';
+    }
+  },
+  onShow() {
     const app = getApp();
-    console.log(app);
-    this.useId = app.globalData.userInfo.usename;
-    this.imgUrl = app.globalData.userInfo.images;
+    if (app.globalData.userInfo) {
+      this.userName = app.globalData.userInfo.name || app.globalData.userInfo.usename || '用户';
+    } else {
+      this.userName = '用户';
+    }
     this.setTimePeriod();
   },
   methods: {
     setTimePeriod() {
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 12) {
-        this.time_period = "上午";
+        this.timePeriod = '上午';
       } else if (hour >= 12 && hour < 18) {
-        this.time_period = "下午";
+        this.timePeriod = '下午';
       } else {
-        this.time_period = "晚上";
+        this.timePeriod = '晚上';
       }
     },
-    linkRedirection(val, item) {
-      if (!val) {
-        uni.showModal({
-          title: "",
-          content: "确定退出当前登录账号吗？",
-          success: (res) => {
-            if (res.confirm) {
-              console.log("用户点击确定");
-              uni.navigateTo({
-                url: "/pages/login/index",
-              });
-              // uni.request({
-              // 	url: 'https://m1.apifoxmock.com/m1/5178036-4843222-default/api/total',
-              // 	method: 'POST',
-              // 	data: {},
-              // 	success: (res) => {
-
-              // 	}
-              // });
-            } else if (res.cancel) {
-              console.log("用户点击取消");
-            }
-          },
-        });
-      } else {
-        uni.navigateTo({
-          url: val,
-          fail: (err) => {
-            console.log("跳转失败:", err);
-            uni.navigateTo({
-              url: "/pages/404/404",
-            });
-          },
-        });
+    handleMenu(item) {
+      if (!item.url) {
+        return uni.showToast({ title: '功能开发中', icon: 'none' });
       }
+      uni.navigateTo({
+        url: item.url,
+        fail: () => {
+          uni.navigateTo({ url: '/pages/404/404' });
+        }
+      });
     },
-  },
-};
+    handleLogout() {
+      uni.showModal({
+        title: '提示',
+        content: '确定退出当前登录账号吗？',
+        success: (res) => {
+          if (res.confirm) {
+            const app = getApp();
+            app.globalData.userInfo = null;
+            app.globalData.token = '';
+            uni.reLaunch({ url: '/pages/login/index' });
+          }
+        }
+      });
+    }
+  }
+}
 </script>
 
-<style scoped lang="scss">
-.linkList::before {
-  content: "";
-  display: block;
-  width: 60rpx;
-  height: 60rpx;
-  position: absolute;
-  top: 50%;
-  right: 9%;
-  transform: translate(-50%, -50%);
-  background-image: url(/static/pic_07.png);
+<style scoped>
+.page {
+  min-height: 100vh;
+  background-color: #f4f6f8;
 }
 
-.linkList {
-  cursor: pointer;
-  border-bottom: 1rpx solid #eee;
+.user-card {
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  padding: 60rpx 40rpx 80rpx;
+}
+
+.user-info {
   display: flex;
-  justify-content: flex-start;
-  width: 100%;
   align-items: center;
-  padding: 36rpx 40rpx;
-  position: relative;
-
-  text {
-    display: block;
-    margin-left: 48rpx;
-    flex: 1;
-  }
-
-  .images {
-    display: block;
-    width: 30rpx;
-    height: 30rpx;
-  }
 }
 
-.user-avatar {
-  position: relative;
-}
-
-.avatar {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: auto;
-  text-align: center;
-}
-
-.avatar_background {
-  .imgs {
-    width: 100%;
-    filter: blur(3px);
-  }
-}
-
-.use_images {
-  width: 150rpx;
-  height: 150rpx;
+.avatar-box {
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 50%;
-  background-color: #eee;
-  margin: 0 auto;
+  background-color: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 30rpx;
+  border: 4rpx solid rgba(255,255,255,0.4);
 }
 
-.useName {
+.avatar-text {
+  font-size: 48rpx;
   color: #fff;
-  margin-top: 10rpx;
-  display: inline-block;
+  font-weight: bold;
+}
+
+.user-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 34rpx;
+  color: #fff;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.user-role {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.75);
+}
+
+.menu-section {
+  background-color: #fff;
+  margin: -30rpx 30rpx 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.logout-section {
+  background-color: #fff;
+  margin: 0 30rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 36rpx 30rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  font-size: 40rpx;
+  margin-right: 24rpx;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.menu-arrow {
+  font-size: 36rpx;
+  color: #ccc;
 }
 </style>

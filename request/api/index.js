@@ -77,12 +77,28 @@ export function getIndexList(params) {
   });
 }
 
-//登录接口
+//登录接口 (Mock)
 export function login(params) {
-  return request({
-    url: "/api/login",
-    method: "POST",
-    data: params,
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (params.phone === 'admin' && params.password === '123456') {
+        resolve({
+          success: true,
+          token: 'mock-token-123456',
+          userInfo: {
+            id: 1,
+            name: '管理员',
+            phone: 'admin'
+          }
+        });
+      } else {
+        uni.showToast({ title: '账号或密码错误（测试：admin/123456）', icon: 'none' });
+        resolve({
+          success: false,
+          message: '账号或密码错误'
+        });
+      }
+    }, 500);
   });
 }
 

@@ -1,107 +1,58 @@
 <template>
-  <view class="container login-page">
-    <!-- 顶部导航栏占位 (根据需要调整) -->
-    <view class="status-bar"></view>
-
-    <!-- 页面内容 -->
-    <view class="content">
-      <!-- Logo 区域 -->
-      <view class="logo-box">
-        <view class="logo">
-          <!-- 这里用CSS模拟图中的Logo形状，实际请替换为 image 标签 -->
-          <image src="/static/logo.png" class="logo-face"></image>
-          <!-- <view class="logo-face">
-            <view class="eye left"></view>
-            <view class="eye right"></view>
-          </view> -->
-        </view>
-      </view>
-
-      <!-- 表单区域 -->
-      <view class="form-area">
-        <!-- 账号输入 -->
-        <view class="input-group">
-          <image src="/static/user.png" class="icon user-icon"></image>
-          <input
-            class="input"
-            type="number"
-            placeholder="请输入手机号"
-            placeholder-style="color: rgba(255, 255, 255, 0.7)"
-            placeholder-class="placeholder-text"
-            v-model="form.phone" />
-        </view>
-
-        <!-- 密码输入 -->
-        <view class="input-group">
-          <image src="/static/password.png" class="icon lock-icon"></image>
-          <input
-            class="input"
-            type="text"
-            :password="!showPassword"
-            placeholder="请输入密码"
-            placeholder-style="color: rgba(255, 255, 255, 0.7)"
-            placeholder-class="placeholder-text"
-            v-model="form.password" />
-          <!-- <view class="icon eye-icon" @click="togglePassword"></view> -->
-          <image
-            class="icon eye-icon"
-            :src="showPassword ? '/static/eye.png' : '/static/eyes.png'"
-            @click="togglePassword"></image>
-        </view>
-
-        <!-- 登录按钮 -->
-        <button class="btn-login" @click="handleLogin">登录</button>
-        <button
-          class="btn-login"
-          @getphonenumber="getPhone"
-          open-type="getPhoneNumber">
-          一键登录
-        </button>
-
-        <!-- 底部链接 -->
-        <view class="footer-links">
-          <text class="link-text" @click="goToRegister">注册</text>
-          <text class="link-text center-text" @click="openPopup">
-            {{ currentNodeName }}(点击切换)
-          </text>
-          <text class="link-text" @click="goToResetPwd">忘记密码</text>
-        </view>
+  <view class="login-container">
+    <view class="header-bg">
+      <view class="header-content">
+        <image class="logo" src="/static/logo.png" mode="aspectFit"></image>
+        <text class="title">设备维保管理系统</text>
+        <text class="subtitle">专业 · 高效 · 智能</text>
       </view>
     </view>
 
-    <view
-      class="popup-mask"
-      v-if="showPopup"
-      @click="closePopup"
-      @touchmove.stop.prevent></view>
-
-    <!-- 2. 弹框内容 -->
-    <view class="popup-box" v-if="showPopup" @touchmove.stop.prevent>
-      <view class="popup-title">选择服务器节点</view>
-
-      <view class="node-list">
-        <view
-          class="node-item"
-          v-for="(item, index) in nodeList"
-          :key="index"
-          @click="selectNode(index)">
-          <text class="node-name">{{ item.name }}</text>
-
-          <!-- 选中状态显示绿色背景打钩，未选中显示灰色圆圈 -->
-          <view
-            class="radio-circle"
-            :class="{ checked: activeNodeIndex === index }">
-            <text v-if="activeNodeIndex === index" class="check-mark">✓</text>
-          </view>
-        </view>
+    <view class="form-card">
+      <view class="form-title">欢迎登录</view>
+      
+      <view class="input-group">
+        <text class="icon">👤</text>
+        <input
+          class="input"
+          type="text"
+          placeholder="请输入账号 (admin)"
+          placeholder-class="placeholder"
+          v-model="form.phone"
+        />
       </view>
+
+      <view class="input-group">
+        <text class="icon">🔒</text>
+        <input
+          class="input"
+          :password="!showPassword"
+          placeholder="请输入密码 (123456)"
+          placeholder-class="placeholder"
+          v-model="form.password"
+        />
+        <text class="icon-right" @click="togglePassword">{{ showPassword ? '👁️' : '👁️‍🗨️' }}</text>
+      </view>
+
+      <button class="login-btn" @click="handleLogin" :disabled="loading">
+        {{ loading ? '登录中...' : '登 录' }}
+      </button>
+
+      <view class="form-footer">
+        <text class="link-text" @click="goToForgetPwd">忘记密码？</text>
+      </view>
+    </view>
+
+    <view class="footer-info">
+      <text>技术支持：设备维保科技有限公司</text>
+      <text>v1.0.0</text>
     </view>
   </view>
 </template>
 
 <script>
 import { login } from "@/request/api/index.js";
-import { createValidator } from "@/Plugin/vailate.js";
+
 export default {
   data() {
     return {
@@ -110,358 +61,199 @@ export default {
         password: "",
       },
       showPassword: false,
-      showPopup: false,
-      activeNodeIndex: 0,
-      nodeList: [
-        {
-          name: "默认服务器节点",
-        },
-        {
-          name: "金天下节点",
-        },
-        {
-          name: "行千里节点",
-        },
-      ],
+      loading: false
     };
   },
-  computed: {
-    currentNodeName() {
-      return this.nodeList[this.activeNodeIndex].name;
-    },
-  },
-  onLoad() {
-    console.log(getApp().globalData.baseUrl);
-  },
   methods: {
-    getPhone(e) {
-      console.log(e);
-    },
-    // 打开弹框
-    openPopup() {
-      this.showPopup = true;
-    },
-    // 关闭弹框
-    closePopup() {
-      this.showPopup = false;
-    },
-    // 选择节点
-    selectNode(index) {
-      this.activeNodeIndex = index;
-      console.log(this.activeNodeIndex);
-      // 选中后延迟 200ms 自动关闭，体验更好
-      setTimeout(() => {
-        this.showPopup = false;
-      }, 200);
-    },
     togglePassword() {
       this.showPassword = !this.showPassword;
     },
     async handleLogin() {
-      // // 手机号为空
-      // if (!this.phone) {
-      //   return uni.showToast({
-      //     title: "请输入手机号",
-      //     icon: "none",
-      //   });
-      // }
-
-      // // 校验手机号格式（非必填逻辑可选）
-      // const phoneReg = /^1[3-9]\d{9}$/;
-      // if (!phoneReg.test(this.phone)) {
-      //   return uni.showToast({
-      //     title: "手机号格式不正确",
-      //     icon: "none",
-      //   });
-      // }
-
-      // // 密码为空
-      // if (!this.password) {
-      //   return uni.showToast({
-      //     title: "请输入密码",
-      //     icon: "none",
-      //   });
-      // }
-
-      // // 密码校验（可选，例如长度 > 6）
-      // if (this.password.length < 6) {
-      //   return uni.showToast({
-      //     title: "密码不能少于6位",
-      //     icon: "none",
-      //   });
-      // }
-      const validator = createValidator();
-      const result = validator
-        .field("phone", { required: true, phone: true })
-        .field("password", { required: true })
-        .validate(this.form);
-
-      if (!result.isValid) {
-        return uni.showToast({ title: result.firstError, icon: "none" });
+      if (!this.form.phone) {
+        return uni.showToast({ title: "请输入账号", icon: "none" });
+      }
+      if (!this.form.password) {
+        return uni.showToast({ title: "请输入密码", icon: "none" });
       }
 
-      let res = await login({
-        phone: this.form.phone,
-        password: this.form.password,
-      });
-      if (res.success) {
-        getApp().globalData.userInfo = res.userInfo;
-        getApp().globalData.token = res.token;
-        uni.switchTab({
-          url: "/pages/index/index",
+      this.loading = true;
+      try {
+        let res = await login({
+          phone: this.form.phone,
+          password: this.form.password,
         });
+        
+        if (res.success) {
+          getApp().globalData.userInfo = res.userInfo;
+          getApp().globalData.token = res.token;
+          uni.showToast({ title: "登录成功", icon: "success" });
+          setTimeout(() => {
+            uni.switchTab({
+              url: "/pages/index/index",
+            });
+          }, 1000);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
       }
     },
-    goToRegister() {
-      uni.navigateTo({
-        url: "/pages/register/index",
-      });
-    },
-    goToResetPwd() {
-      uni.navigateTo({
-        url: "/pages/forgetPwd/index",
-      });
-    },
-    // changeNode() {
-    // 	uni.show;
-    // },
-  },
+    goToForgetPwd() {
+      uni.showToast({ title: "请联系管理员重置密码", icon: "none" });
+    }
+  }
 };
 </script>
 
 <style scoped>
-/* 页面容器铺满全屏 */
-.login-page {
+.login-container {
   min-height: 100vh;
+  background-color: #f4f6f8;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  background: radial-gradient(
-      ellipse 40% 60% at 100% 55%,
-      #e4f0d8 0%,
-      rgba(179, 226, 206, 0) 70%
-    ),
-    radial-gradient(circle at 0% 100%, #e4f0d8 0%, rgba(211, 236, 216, 0) 25%),
-    linear-gradient(
-      135deg,
-      #5a8fa8 0%,
-      #6eb3c4 25%,
-      #82c9d0 50%,
-
-      #7ce5d4 100%
-    );
-  display: flex;
-  flex-direction: column;
 }
 
-.container::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-
-  /* background: linear-gradient(
-    180deg,
-    rgba(62, 213, 213, 0.7) 0%,
-    rgba(89, 183, 224, 0.2) 25%,
-    rgba(123, 228, 211, 0.2) 60%
-  ); */
-
-  pointer-events: none;
-}
-
-.content {
-  flex: 1;
+.header-bg {
+  height: 450rpx;
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 60rpx;
-  padding-top: 150rpx;
-}
-
-/* Logo 样式模拟 */
-.logo {
-  border-radius: 50% 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-
-  margin-bottom: 60rpx;
-}
-
-.logo-face {
-  width: 400rpx;
-  height: 260rpx;
-  border-radius: 30rpx;
-  /* transform: rotate(45deg); */
-  display: flex;
-  justify-content: space-around;
   align-items: center;
-  padding: 0 10rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 80, 179, 0.3);
 }
 
-.eye {
-  width: 12rpx;
-  height: 12rpx;
-  background-color: #333;
-  border-radius: 50%;
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -40rpx;
 }
 
-/* 表单样式 */
-.form-area {
-  width: 100%;
+.logo {
+  width: 120rpx;
+  height: 120rpx;
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  color: #ffffff;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+  margin-bottom: 10rpx;
+}
+
+.subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2rpx;
+}
+
+.form-card {
+  margin: -100rpx 40rpx 0;
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  padding: 60rpx 40rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.form-title {
+  font-size: 36rpx;
+  color: #333333;
+  font-weight: bold;
+  margin-bottom: 50rpx;
+  text-align: center;
 }
 
 .input-group {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 20rpx 0;
+  background-color: #f8f9fb;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  height: 90rpx;
   margin-bottom: 40rpx;
+  border: 1px solid #ebedf0;
+  transition: all 0.3s;
+}
+
+.input-group:focus-within {
+  border-color: #1890ff;
+  background-color: #ffffff;
+}
+
+.icon {
+  font-size: 36rpx;
+  color: #999;
+  margin-right: 20rpx;
+}
+
+.icon-right {
+  font-size: 36rpx;
+  color: #999;
+  padding: 10rpx;
 }
 
 .input {
   flex: 1;
-  font-size: 32rpx;
-  color: #fff;
-  padding: 0 20rpx;
-}
-
-.placeholder-text {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* 简单的CSS图标模拟 */
-.icon {
-  width: 40rpx;
-  height: 40rpx;
-  /* border: 2rpx solid #fff; */
-  border-radius: 50%;
-}
-
-.user-icon {
-  border-radius: 50%;
-}
-
-/* 实际请用 iconfont */
-.lock-icon {
-  border-radius: 4rpx;
-}
-
-.eye-icon {
-  border-radius: 50%;
-  width: 30rpx;
-  height: 30rpx;
-}
-
-/* 按钮 */
-.btn-login {
-  /* background-color: #29b6f6; */
-  color: #fff;
-  border-radius: 8rpx;
-  font-size: 34rpx;
-  margin-top: 30rpx;
-  border: none;
-  background: linear-gradient(90deg, #10b1e7 0%, /* 中蓝绿 */ #1eb1e3 100%);
-
-  /* 按钮轻微立体感 */
-  box-shadow: 6rpx 6rpx 2rpx #25a1cb;
-}
-
-.btn-login::after {
-  border: none;
-}
-
-/* 底部链接 */
-.footer-links {
-  margin-top: 40rpx;
-  display: flex;
-  justify-content: space-between;
-  font-size: 26rpx;
-  color: #fff;
-}
-
-.center-text {
-  margin: 0 20rpx;
-  opacity: 0.8;
-}
-
-.popup-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  /* 半透明黑 */
-  z-index: 998;
-}
-
-/* 2. 弹框本体 */
-.popup-box {
-  position: fixed;
-  top: 45%;
-  /* 稍微偏上一点，视觉更平衡 */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600rpx;
-  background-color: #fff;
-  border-radius: 16rpx;
-  z-index: 999;
-  padding: 50rpx 40rpx;
-  box-sizing: border-box;
-}
-
-.popup-title {
-  text-align: center;
-  font-size: 36rpx;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 50rpx;
-}
-
-.node-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.node-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24rpx 0;
-  /* 增加点击区域 */
-}
-
-.node-name {
   font-size: 30rpx;
   color: #333;
 }
 
-/* 选中圈圈样式 */
-.radio-circle {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 50%;
-  border: 2rpx solid #ccc;
-  /* 未选中灰色边框 */
+.placeholder {
+  color: #bfbfbf;
+}
+
+.login-btn {
+  background: linear-gradient(90deg, #1890ff 0%, #36cfc9 100%);
+  color: #ffffff;
+  font-size: 34rpx;
+  border-radius: 45rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  margin-top: 60rpx;
+  border: none;
+  box-shadow: 0 8rpx 16rpx rgba(24, 144, 255, 0.3);
+}
+
+.login-btn::after {
+  border: none;
+}
+
+.login-btn[disabled] {
+  opacity: 0.7;
+}
+
+.form-footer {
   display: flex;
+  justify-content: flex-end;
+  margin-top: 30rpx;
+}
+
+.link-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.footer-info {
+  margin-top: auto;
+  padding: 40rpx 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  transition: all 0.2s;
+  font-size: 22rpx;
+  color: #b0b0b0;
 }
 
-/* 选中状态 */
-.radio-circle.checked {
-  background-color: #07c160;
-  /* 微信绿 */
-  border-color: #07c160;
-}
-
-.check-mark {
-  color: #fff;
-  font-size: 28rpx;
-  line-height: 1;
+.footer-info text {
+  margin-top: 10rpx;
 }
 </style>
