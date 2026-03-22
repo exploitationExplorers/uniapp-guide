@@ -37,7 +37,6 @@
             :src="img"
             mode="aspectFill"
             @click="previewImage(i)"
-            @longpress.stop="onPhotoLongPress(i)"
           ></image>
           <view class="photo-del" @click.stop="removePhoto(i)">×</view>
         </view>
@@ -80,9 +79,8 @@
             <text class="wm-line">纬度：{{ formatLat(watermarkLat) }}</text>
             <text class="wm-line">方位角：西{{ bearing }}°</text>
           </view>
-          <!-- 右上角地图区域 + 二维码 -->
+          <!-- 右上角：仅地图（二维码只在拍完合成后的照片里出现，此处不展示） -->
           <view class="wm-top-right">
-            <image class="wm-qrcode" :src="qrcodeUrl" mode="aspectFit" @longpress="onQrcodeLongPress"></image>
             <view class="wm-map-box">
               <map class="wm-map" :longitude="watermarkLng" :latitude="watermarkLat" :scale="15"
                 :markers="mapMarkers" :show-location="false"></map>
@@ -97,6 +95,33 @@
         <view class="cam-btn cancel-btn" @click="closeCamera">取消</view>
         <view class="cam-btn shoot-btn" @click="capturePhoto">📷</view>
         <view class="cam-btn" style="opacity:0;">占位</view>
+      </view>
+    </view>
+
+    <!-- 拍完照后点击缩略图：全屏黑底预览（类似系统相册）；长按右上角透明区 → qrVerify -->
+    <view
+      v-if="showPhotoPreview"
+      class="photo-viewer-mask"
+      @touchmove.stop.prevent
+    >
+      <view class="photo-viewer-stage" @click.stop>
+        <view class="photo-viewer-bar">
+          <text class="photo-viewer-done" @click="closePhotoPreview">完成</text>
+        </view>
+        <view class="photo-viewer-center">
+          <view class="photo-viewer-img-wrap">
+            <image
+              class="photo-viewer-img"
+              :src="photoList[previewIndex]"
+              mode="aspectFit"
+            />
+            <view
+              class="photo-viewer-qr-zone"
+              @longpress.stop="onViewerQrLongPress"
+              @click.stop
+            />
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -132,7 +157,9 @@ export default {
       mapMarkers: [],
       cameraCtx: null,
       canvasWidth: 1080,
-      canvasHeight: 1920
+      canvasHeight: 1920,
+      showPhotoPreview: false,
+      previewIndex: 0
     }
   },
   onLoad(options) {
@@ -285,10 +312,23 @@ export default {
 
         let localQrcode = '';
         try {
-          const qrInfo = await new Promise((resolve, reject) => {
-            uni.getImageInfo({ src: this.qrcodeUrl, success: resolve, fail: reject });
-          });
-          localQrcode = qrInfo.path;
+          const url = this.qrcodeUrl;
+          if (url && /^https?:\/\//i.test(url)) {
+            const dl = await new Promise((resolve) => {
+              uni.downloadFile({ url, success: resolve, fail: () => resolve({ statusCode: 0 }) });
+            });
+            if (dl.statusCode === 200 && dl.tempFilePath) {
+              const qrInfo = await new Promise((resolve, reject) => {
+                uni.getImageInfo({ src: dl.tempFilePath, success: resolve, fail: reject });
+              });
+              localQrcode = qrInfo.path;
+            }
+          } else if (url) {
+            const qrInfo = await new Promise((resolve, reject) => {
+              uni.getImageInfo({ src: url, success: resolve, fail: reject });
+            });
+            localQrcode = qrInfo.path;
+          }
         } catch (e) {
           void e;
         }
@@ -296,12 +336,43 @@ export default {
         const lngStr = Number(snapLng).toFixed(6);
         const latStr = Number(snapLat).toFixed(6);
 
+        const fillRoundRect = (ctx2, x, y, w, h, r, color) => {
+          const rr = Math.min(r, w / 2, h / 2);
+          ctx2.setFillStyle(color);
+          ctx2.beginPath();
+          ctx2.moveTo(x + rr, y);
+          ctx2.lineTo(x + w - rr, y);
+          ctx2.quadraticCurveTo(x + w, y, x + w, y + rr);
+          ctx2.lineTo(x + w, y + h - rr);
+          ctx2.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+          ctx2.lineTo(x + rr, y + h);
+          ctx2.quadraticCurveTo(x, y + h, x, y + h - rr);
+          ctx2.lineTo(x, y + rr);
+          ctx2.quadraticCurveTo(x, y, x + rr, y);
+          ctx2.closePath();
+          ctx2.fill();
+        };
+        /** 网络二维码失败时画占位（请在微信小程序后台配置 downloadFile 域名：api.qrserver.com） */
+        const drawPlaceholderQr = (ctx2, x, y, size) => {
+          ctx2.setFillStyle('#ffffff');
+          ctx2.fillRect(x, y, size, size);
+          ctx2.setStrokeStyle('#cccccc');
+          ctx2.setLineWidth(Math.max(1, size / 80));
+          ctx2.strokeRect(x, y, size, size);
+          ctx2.setFillStyle('#999999');
+          ctx2.setFontSize(Math.max(12, size * 0.14));
+          ctx2.setTextAlign('center');
+          ctx2.setTextBaseline('middle');
+          ctx2.fillText('二维码', x + size / 2, y + size / 2);
+          ctx2.setTextAlign('left');
+        };
+
         await new Promise((resolveDraw) => {
           const ctx = uni.createCanvasContext('watermarkCanvas', this);
           ctx.drawImage(imagePath, 0, 0, width, height);
 
-          const scale = width / 1080;
-          const padding = 40 * scale;
+          // 与页面水印层一致：按设计稿 750rpx 宽度换算到当前照片像素
+          const rpx = width / 750;
 
           const texts = [
             `施工内容：${this.formData.content || this.deviceCode}`,
@@ -313,86 +384,103 @@ export default {
             `方位角：西${this.bearing}°`
           ];
 
-          const lineHeight = 45 * scale;
-          const fontSize = 32 * scale;
-          const boxWidth = 600 * scale;
-          const headerHeight = 60 * scale;
-          const contentHeight = texts.length * lineHeight + 40 * scale;
-          const totalHeight = headerHeight + contentHeight;
+          const padX = 24 * rpx;
+          const padY = 20 * rpx;
+          const edge = 20 * rpx;
+          const tagFont = 28 * rpx;
+          const lineFont = 22 * rpx;
+          const lineSpacing = lineFont * 1.8;
+          const tagGap = 12 * rpx;
+          const dotR = 8 * rpx;
+          const tagTitle = this.formData.maintainType || '设备维护';
 
-          const boxLeft = padding;
-          const boxBottom = height - padding;
-          const boxTop = boxBottom - totalHeight;
+          const tagRowH = tagFont;
+          const boxW = Math.min(width * 0.7, 520 * rpx);
+          const boxH = padY + tagRowH + tagGap + texts.length * lineSpacing + padY;
+          const boxLeft = edge;
+          const boxTop = height - edge - boxH;
+          const radius = 12 * rpx;
 
-          // ---- 左下角信息区 ----
-          ctx.setFillStyle('#4a90e2');
-          ctx.fillRect(boxLeft, boxTop, boxWidth, headerHeight);
+          // ---- 左下角：与 .wm-bottom-left 一致（半透明黑底 + 黄点标题 + 白字）----
+          fillRoundRect(ctx, boxLeft, boxTop, boxW, boxH, radius, 'rgba(0,0,0,0.45)');
 
-          ctx.setFillStyle('rgba(0, 0, 0, 0.45)');
-          ctx.fillRect(boxLeft, boxTop + headerHeight, boxWidth, contentHeight);
-
-          ctx.setFillStyle('#f5a623');
+          const tx = boxLeft + padX;
+          const ty = boxTop + padY;
+          ctx.setFillStyle('#faad14');
           ctx.beginPath();
-          ctx.arc(boxLeft + 30 * scale, boxTop + headerHeight / 2, 12 * scale, 0, 2 * Math.PI);
+          ctx.arc(tx + dotR, ty + dotR, dotR, 0, 2 * Math.PI);
           ctx.fill();
 
-          ctx.setFillStyle('#ffffff');
-          ctx.setFontSize(36 * scale);
+          ctx.setFillStyle('#faad14');
+          ctx.setFontSize(tagFont);
           ctx.setTextBaseline('middle');
-          ctx.fillText(this.formData.maintainType || '设备维护', boxLeft + 60 * scale, boxTop + headerHeight / 2);
+          ctx.fillText(tagTitle, tx + dotR * 2 + 12 * rpx, ty + dotR);
 
-          ctx.setFontSize(fontSize);
+          ctx.setFillStyle('#ffffff');
+          ctx.setFontSize(lineFont);
           ctx.setTextBaseline('top');
-          texts.forEach((text, i) => {
-            ctx.fillText(text, boxLeft + 20 * scale, boxTop + headerHeight + 20 * scale + i * lineHeight);
+          let lineY = ty + tagRowH + tagGap;
+          texts.forEach((line) => {
+            ctx.fillText(line, tx, lineY);
+            lineY += lineSpacing;
           });
 
-          // ---- 右上角：二维码 + 地图截图区 ----
-          const qrSize = 180 * scale;
-          const mapW = 260 * scale;
-          const mapH = 200 * scale;
-          const blockRight = width - padding;
-          const blockTop = padding;
+          // ---- 右上角：与 .wm-top-right 一致（二维码在上、地图在下、底部验真/导航）----
+          const qrSize = 120 * rpx;
+          const mapW = 200 * rpx;
+          const mapH = 160 * rpx;
+          const gapQrMap = 12 * rpx;
+          const gapMapHint = 8 * rpx;
 
-          // 二维码白底 + 图片
-          const qrLeft = blockRight - qrSize;
+          const mapLeft = width - edge - mapW;
+          const qrLeft = mapLeft + (mapW - qrSize) / 2;
+          const qrTop = edge;
+          const mapTop = qrTop + qrSize + gapQrMap;
+
           ctx.setFillStyle('#ffffff');
-          ctx.fillRect(qrLeft - 10 * scale, blockTop - 10 * scale, qrSize + 20 * scale, qrSize + 20 * scale);
+          fillRoundRect(ctx, qrLeft - 4 * rpx, qrTop - 4 * rpx, qrSize + 8 * rpx, qrSize + 8 * rpx, 8 * rpx, '#ffffff');
           if (localQrcode) {
-            ctx.drawImage(localQrcode, qrLeft, blockTop, qrSize, qrSize);
+            ctx.drawImage(localQrcode, qrLeft, qrTop, qrSize, qrSize);
+          } else {
+            drawPlaceholderQr(ctx, qrLeft, qrTop, qrSize);
           }
 
-          // 地图区域（灰底模拟，因 canvas 无法截取 map 组件）
-          const mapTop = blockTop + qrSize + 30 * scale;
-          const mapLeft = blockRight - mapW;
+          const brandH = 28 * rpx;
+          const mapTileH = mapH - brandH;
+
           ctx.setFillStyle('#e8edf3');
-          ctx.fillRect(mapLeft, mapTop, mapW, mapH);
-          ctx.setStrokeStyle('rgba(255,255,255,0.6)');
-          ctx.setLineWidth(2 * scale);
+          fillRoundRect(ctx, mapLeft, mapTop, mapW, mapH, 8 * rpx, '#e8edf3');
+          ctx.setStrokeStyle('rgba(255,255,255,0.5)');
+          ctx.setLineWidth(Math.max(1, 2 * rpx));
           ctx.strokeRect(mapLeft, mapTop, mapW, mapH);
 
-          // 地图上标注点
           const pinX = mapLeft + mapW / 2;
-          const pinY = mapTop + mapH / 2 - 15 * scale;
-          ctx.setFillStyle('#e74c3c');
+          const pinY = mapTop + mapTileH / 2;
+          ctx.setFillStyle('#e64340');
           ctx.beginPath();
-          ctx.arc(pinX, pinY, 12 * scale, 0, 2 * Math.PI);
+          ctx.arc(pinX, pinY, 10 * rpx, 0, 2 * Math.PI);
           ctx.fill();
           ctx.setFillStyle('#ffffff');
           ctx.beginPath();
-          ctx.arc(pinX, pinY, 5 * scale, 0, 2 * Math.PI);
+          ctx.arc(pinX, pinY, 4 * rpx, 0, 2 * Math.PI);
           ctx.fill();
 
-          // "验真/导航" 文字
-          ctx.setFillStyle('#ffffff');
-          ctx.setFontSize(26 * scale);
+          ctx.setFillStyle('rgba(255,255,255,0.92)');
+          ctx.fillRect(mapLeft, mapTop + mapH - brandH, mapW, brandH);
+          ctx.setFillStyle('#576b95');
+          ctx.setFontSize(18 * rpx);
+          ctx.setTextAlign('center');
+          ctx.setTextBaseline('middle');
+          ctx.fillText('腾讯地图', mapLeft + mapW / 2, mapTop + mapH - brandH / 2);
+
+          ctx.setFillStyle('rgba(255,255,255,0.85)');
+          ctx.setFontSize(20 * rpx);
           ctx.setTextAlign('center');
           ctx.setTextBaseline('top');
-          ctx.setShadow(1 * scale, 1 * scale, 4 * scale, 'rgba(0,0,0,0.6)');
-          ctx.fillText('验真/导航', mapLeft + mapW / 2, mapTop + mapH + 16 * scale);
+          ctx.setShadow(0, 1 * rpx, 3 * rpx, 'rgba(0,0,0,0.45)');
+          ctx.fillText('验真/导航', mapLeft + mapW / 2, mapTop + mapH + gapMapHint);
           ctx.setShadow(0, 0, 0, 'transparent');
           ctx.setTextAlign('left');
-          ctx.setTextBaseline('top');
 
           ctx.draw(false, () => {
             setTimeout(() => {
@@ -406,7 +494,7 @@ export default {
                 quality: 0.92,
                 success: (res) => {
                   this.photoList.push(res.tempFilePath);
-                  this.photoMetaList.push({ lat: snapLat, lng: snapLng });
+                  this.photoMetaList.push({ lat: snapLat, lng: snapLng, time: this.currentTime });
                   this.showCamera = false;
                   uni.hideLoading();
                   uni.showToast({ title: '拍照成功', icon: 'success' });
@@ -426,7 +514,7 @@ export default {
         uni.hideLoading();
         uni.showToast({ title: '水印处理失败', icon: 'none' });
         this.photoList.push(imagePath);
-        this.photoMetaList.push({ lat: snapLat, lng: snapLng });
+        this.photoMetaList.push({ lat: snapLat, lng: snapLng, time: this.currentTime });
         this.showCamera = false;
       }
     },
@@ -434,43 +522,52 @@ export default {
       this.photoList.splice(index, 1);
       this.photoMetaList.splice(index, 1);
     },
+    /** 点击缩略图：自定义预览，便于长按右上角二维码区域跳转验真（系统 previewImage 无法拦截长按） */
     previewImage(index) {
-      const urls = this.photoList;
-      if (!urls.length) return;
-      uni.previewImage({
-        current: urls[index],
-        urls,
-        showmenu: true
-      });
+      if (!this.photoList.length) return;
+      this.previewIndex = index;
+      this.showPhotoPreview = true;
     },
-    goToVerifyPage(lat, lng, photoSrc) {
+    closePhotoPreview() {
+      this.showPhotoPreview = false;
+    },
+    /** 大图预览里长按二维码区域 */
+    onViewerQrLongPress() {
+      const i = this.previewIndex;
+      const meta = this.photoMetaList[i];
+      const photo = this.photoList[i] || '';
+      const t = meta && meta.time ? meta.time : this.currentTime;
+      if (meta && Number.isFinite(meta.lat) && Number.isFinite(meta.lng)) {
+        this.goToVerifyPage(meta.lat, meta.lng, photo, t);
+      } else {
+        this.goToVerifyPage(null, null, photo, t);
+      }
+      this.closePhotoPreview();
+    },
+    goToVerifyPage(lat, lng, photoSrc, timeOverride) {
       const la = Number.isFinite(Number(lat)) ? Number(lat) : this.watermarkLat;
       const ln = Number.isFinite(Number(lng)) ? Number(lng) : this.watermarkLng;
+      const timeStr = timeOverride || this.currentTime;
+      if (photoSrc) {
+        try {
+          uni.setStorageSync('qr_verify_photo', photoSrc);
+        } catch (e) {
+          void e;
+        }
+      }
       const params = [
         `lat=${la}`,
         `lng=${ln}`,
         `addr=${encodeURIComponent(this.deviceAddr)}`,
-        `time=${encodeURIComponent(this.currentTime)}`,
+        `time=${encodeURIComponent(timeStr)}`,
         `code=${encodeURIComponent(this.formData.content || this.deviceCode)}`,
         `name=${encodeURIComponent(this.deviceName)}`,
         `type=${encodeURIComponent(this.formData.maintainType || '设备维护')}`,
         `bearing=${this.bearing}`,
         `remark=${encodeURIComponent(this.formData.remark || '')}`,
-        `photo=${encodeURIComponent(photoSrc || '')}`
+        photoSrc ? 'photoCached=1' : 'photoCached=0'
       ].join('&');
       uni.navigateTo({ url: `/pages/qrVerify/index?${params}` });
-    },
-    onQrcodeLongPress() {
-      this.goToVerifyPage();
-    },
-    onPhotoLongPress(index) {
-      const meta = this.photoMetaList[index];
-      const photo = this.photoList[index] || '';
-      if (meta && Number.isFinite(meta.lat) && Number.isFinite(meta.lng)) {
-        this.goToVerifyPage(meta.lat, meta.lng, photo);
-      } else {
-        this.goToVerifyPage(null, null, photo);
-      }
     },
     submitMaintenance() {
       if (!this.formData.content) {
@@ -792,5 +889,76 @@ export default {
   justify-content: center;
   font-size: 48rpx;
   border: 6rpx solid rgba(255,255,255,0.5);
+}
+
+/* 全屏大图预览（与系统相册类似：黑底 + 图片居中铺满可视区） */
+.photo-viewer-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background-color: #000;
+}
+
+.photo-viewer-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.photo-viewer-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: calc(16rpx + env(safe-area-inset-top)) 32rpx 80rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+}
+
+.photo-viewer-done {
+  pointer-events: auto;
+  color: #fff;
+  font-size: 34rpx;
+  padding: 12rpx 8rpx;
+}
+
+.photo-viewer-center {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.photo-viewer-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-viewer-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.photo-viewer-qr-zone {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  width: 200rpx;
+  height: 200rpx;
+  z-index: 10;
 }
 </style>

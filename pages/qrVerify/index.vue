@@ -39,13 +39,13 @@
         <text class="empty-text">暂无绑定照片</text>
       </view>
 
-      <view class="verify-row">
+      <!-- <view class="verify-row">
         <text class="verify-tip">如果需要验证图片是否修改过，可点击下方验真</text>
         <view class="verify-btn" @click="onVerify">
           <text class="plus-icon">+</text>
           <text>上传图片验真</text>
         </view>
-      </view>
+      </view> -->
 
       <!-- 水印信息 -->
       <view class="info-container wm-info">
@@ -100,7 +100,15 @@ export default {
     this.maintainType = decodeURIComponent(options.type || '设备维护');
     this.bearing = options.bearing || '271';
     this.remark = decodeURIComponent(options.remark || '');
-    this.photoSrc = decodeURIComponent(options.photo || '');
+    if (options.photoCached === '1') {
+      try {
+        this.photoSrc = uni.getStorageSync('qr_verify_photo') || '';
+      } catch (e) {
+        this.photoSrc = '';
+      }
+    } else {
+      this.photoSrc = decodeURIComponent(options.photo || '');
+    }
     const app = getApp();
     if (app.globalData && app.globalData.userInfo) {
       this.userName = app.globalData.userInfo.realName || app.globalData.userInfo.nickname || '';
