@@ -32,8 +32,14 @@
       <view class="section-title">维保拍照</view>
       <view class="photo-list">
         <view class="photo-item" v-for="(img, i) in photoList" :key="i">
-          <image class="photo-img" :src="img" mode="aspectFill" @click="previewImage(i)"></image>
-          <view class="photo-del" @click="removePhoto(i)">×</view>
+          <image
+            class="photo-img"
+            :src="img"
+            mode="aspectFill"
+            @click="previewImage(i)"
+            @longpress.stop="onPhotoLongPress(i)"
+          ></image>
+          <view class="photo-del" @click.stop="removePhoto(i)">×</view>
         </view>
         <view class="photo-add" @click="takeWatermarkPhoto" v-if="photoList.length < 4">
           <text class="add-icon">📷</text>
@@ -47,6 +53,14 @@
       {{ submitting ? '提交中...' : '提交维保记录' }}
     </button>
 
+    <canvas canvas-id="watermarkCanvas" :style="{
+      width: canvasWidth + 'px',
+      height: canvasHeight + 'px',
+      position: 'fixed',
+      top: '-10000px',
+      left: '-10000px'
+    }"></canvas>
+
     <!-- 水印拍照预览弹窗 -->
     <view class="watermark-mask" v-if="showCamera" @touchmove.prevent>
       <camera class="camera-view" device-position="back" flash="auto" @error="onCameraError">
@@ -58,19 +72,19 @@
               <view class="wm-dot"></view>
               <text class="wm-tag-text">{{ formData.maintainType || '设备维护' }}</text>
             </view>
-            <text class="wm-line">施工内容：{{ deviceCode }}</text>
-            <text class="wm-line">备　　注：{{ formData.remark || '无' }}</text>
+            <text class="wm-line">施工内容：{{ formData.content || deviceCode }}</text>
+            <text class="wm-line">备注：{{ formData.remark || '无' }}</text>
             <text class="wm-line">拍摄时间：{{ currentTime }}</text>
-            <text class="wm-line">地　　点：{{ deviceAddr }}</text>
-            <text class="wm-line">经　　度：{{ deviceLng }}°E</text>
-            <text class="wm-line">纬　　度：{{ deviceLat }}°N</text>
-            <text class="wm-line">方 位 角：西{{ bearing }}°</text>
+            <text class="wm-line">地点：{{ deviceAddr }}</text>
+            <text class="wm-line">经度：{{ formatLng(watermarkLng) }}</text>
+            <text class="wm-line">纬度：{{ formatLat(watermarkLat) }}</text>
+            <text class="wm-line">方位角：西{{ bearing }}°</text>
           </view>
           <!-- 右上角地图区域 + 二维码 -->
           <view class="wm-top-right">
             <image class="wm-qrcode" :src="qrcodeUrl" mode="aspectFit" @longpress="onQrcodeLongPress"></image>
             <view class="wm-map-box">
-              <map class="wm-map" :longitude="deviceLng" :latitude="deviceLat" :scale="15"
+              <map class="wm-map" :longitude="watermarkLng" :latitude="watermarkLat" :scale="15"
                 :markers="mapMarkers" :show-location="false"></map>
             </view>
             <text class="wm-hint">验真/导航</text>
@@ -97,6 +111,9 @@ export default {
       deviceAddr: '',
       deviceLat: 0,
       deviceLng: 0,
+      /** 拍照水印/二维码使用的实时经纬度（uni.getLocation） */
+      watermarkLat: 0,
+      watermarkLng: 0,
       formData: {
         content: '',
         maintainType: '',
@@ -105,13 +122,17 @@ export default {
       maintainTypes: ['日常巡检', '故障维修', '保养维护', '改造升级'],
       typeIndex: 0,
       photoList: [],
+      /** 与 photoList 一一对应：该张照片合成水印时锁定的经纬度（长按缩略图导航用） */
+      photoMetaList: [],
       showCamera: false,
       submitting: false,
       currentTime: '',
       bearing: '271',
       qrcodeUrl: '',
       mapMarkers: [],
-      cameraCtx: null
+      cameraCtx: null,
+      canvasWidth: 1080,
+      canvasHeight: 1920
     }
   },
   onLoad(options) {
@@ -120,30 +141,70 @@ export default {
     this.deviceAddr = decodeURIComponent(options.addr || '');
     this.deviceLat = Number(options.lat) || 0;
     this.deviceLng = Number(options.lng) || 0;
+    this.watermarkLat = this.deviceLat;
+    this.watermarkLng = this.deviceLng;
     this.formData.maintainType = this.maintainTypes[0];
-    this.mapMarkers = [{
-      id: 1,
-      latitude: this.deviceLat,
-      longitude: this.deviceLng,
-      width: 30,
-      height: 30
-    }];
+    this.syncMapMarkers();
     this.generateQrcode();
   },
   onReady() {
     this.cameraCtx = uni.createCameraContext();
   },
   methods: {
+    formatLat(lat) {
+      const n = Number(lat);
+      return Number.isFinite(n) ? `${n.toFixed(6)}°N` : '--';
+    },
+    formatLng(lng) {
+      const n = Number(lng);
+      return Number.isFinite(n) ? `${n.toFixed(6)}°E` : '--';
+    },
+    syncMapMarkers() {
+      this.mapMarkers = [{
+        id: 1,
+        latitude: this.watermarkLat,
+        longitude: this.watermarkLng,
+        width: 30,
+        height: 30
+      }];
+    },
+    /** 实时获取当前位置，用于水印与二维码（失败则回退为设备登记坐标） */
+    refreshLocation() {
+      return new Promise((resolve) => {
+        uni.getLocation({
+          type: 'gcj02',
+          isHighAccuracy: true,
+          success: (res) => {
+            this.watermarkLat = res.latitude;
+            this.watermarkLng = res.longitude;
+            this.syncMapMarkers();
+            this.generateQrcode();
+            resolve(true);
+          },
+          fail: () => {
+            if (this.deviceLat && this.deviceLng) {
+              this.watermarkLat = this.deviceLat;
+              this.watermarkLng = this.deviceLng;
+              this.syncMapMarkers();
+              this.generateQrcode();
+              uni.showToast({ title: '定位失败，已用设备登记坐标', icon: 'none' });
+            } else {
+              uni.showToast({ title: '无法获取位置，请开启定位权限', icon: 'none' });
+            }
+            resolve(false);
+          }
+        });
+      });
+    },
     onTypeChange(e) {
       this.typeIndex = e.detail.value;
       this.formData.maintainType = this.maintainTypes[this.typeIndex];
     },
     generateQrcode() {
-      // 生成一个包含经纬度的导航链接的二维码图片
-      // 使用腾讯地图URI scheme，长按可调起导航
-      const navUrl = `https://uri.amap.com/marker?position=${this.deviceLng},${this.deviceLat}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
-      // 用在线二维码API生成
-      this.qrcodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(navUrl)}`;
+      const lat = this.watermarkLat;
+      const lng = this.watermarkLng;
+      const navUrl = `https://uri.amap.com/marker?position=${lng},${lat}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
+      this.qrcodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(navUrl)}`;
     },
     updateTime() {
       const now = new Date();
@@ -154,83 +215,256 @@ export default {
       const mi = String(now.getMinutes()).padStart(2, '0');
       this.currentTime = `${y}.${m}.${d} ${h}:${mi}`;
     },
-    takeWatermarkPhoto() {
+    async takeWatermarkPhoto() {
       if (!this.formData.content && !this.deviceCode) {
         return uni.showToast({ title: '请先填写施工内容', icon: 'none' });
       }
+      uni.showLoading({ title: '正在定位...', mask: true });
+      await this.refreshLocation();
       this.updateTime();
+      uni.hideLoading();
       this.showCamera = true;
     },
     closeCamera() {
       this.showCamera = false;
     },
-    onCameraError(e) {
-      console.error('相机错误:', e);
-      // 相机不可用时，改用chooseImage
+    onCameraError() {
+      // 相机不可用时，改用相册/系统相机选图
       this.fallbackChooseImage();
     },
-    fallbackChooseImage() {
+    async fallbackChooseImage() {
       this.showCamera = false;
       uni.chooseImage({
         count: 1,
         sizeType: ['compressed'],
         sourceType: ['camera'],
-        success: (res) => {
-          this.photoList.push(res.tempFilePaths[0]);
+        success: async (res) => {
+          uni.showLoading({ title: '处理中...', mask: true });
+          await this.refreshLocation();
+          this.updateTime();
+          this.generateQrcode();
+          await this.addWatermark(res.tempFilePaths[0]);
         }
       });
     },
-    capturePhoto() {
+    async capturePhoto() {
       if (!this.cameraCtx) {
-        this.fallbackChooseImage();
+        await this.fallbackChooseImage();
         return;
       }
+      uni.showLoading({ title: '正在定位...', mask: true });
+      await this.refreshLocation();
+      this.updateTime();
+      this.generateQrcode();
+      uni.showLoading({ title: '处理中...', mask: true });
       this.cameraCtx.takePhoto({
         quality: 'high',
         success: (res) => {
-          this.photoList.push(res.tempImagePath);
-          this.showCamera = false;
-          uni.showToast({ title: '拍照成功', icon: 'success' });
+          this.addWatermark(res.tempImagePath);
         },
         fail: () => {
+          uni.hideLoading();
           this.fallbackChooseImage();
         }
       });
     },
+    async addWatermark(imagePath) {
+      // 锁定本次水印使用的经纬度（与二维码一致）
+      const snapLat = this.watermarkLat;
+      const snapLng = this.watermarkLng;
+      try {
+        const imgInfo = await new Promise((resolve, reject) => {
+          uni.getImageInfo({ src: imagePath, success: resolve, fail: reject });
+        });
+
+        const { width, height } = imgInfo;
+        this.canvasWidth = width;
+        this.canvasHeight = height;
+        await this.$nextTick();
+        await new Promise((r) => setTimeout(r, 100));
+
+        let localQrcode = '';
+        try {
+          const qrInfo = await new Promise((resolve, reject) => {
+            uni.getImageInfo({ src: this.qrcodeUrl, success: resolve, fail: reject });
+          });
+          localQrcode = qrInfo.path;
+        } catch (e) {
+          void e;
+        }
+
+        const lngStr = Number(snapLng).toFixed(6);
+        const latStr = Number(snapLat).toFixed(6);
+
+        await new Promise((resolveDraw) => {
+          const ctx = uni.createCanvasContext('watermarkCanvas', this);
+          ctx.drawImage(imagePath, 0, 0, width, height);
+
+          const scale = width / 1080;
+          const padding = 40 * scale;
+
+          const texts = [
+            `施工内容：${this.formData.content || this.deviceCode}`,
+            `备注：${this.formData.remark || '无'}`,
+            `拍摄时间：${this.currentTime}`,
+            `地点：${this.deviceAddr}`,
+            `经度：${lngStr}°E`,
+            `纬度：${latStr}°N`,
+            `方位角：西${this.bearing}°`
+          ];
+
+          const lineHeight = 45 * scale;
+          const fontSize = 32 * scale;
+          const boxWidth = 600 * scale;
+          const headerHeight = 60 * scale;
+          const contentHeight = texts.length * lineHeight + 40 * scale;
+          const totalHeight = headerHeight + contentHeight;
+
+          const boxLeft = padding;
+          const boxBottom = height - padding;
+          const boxTop = boxBottom - totalHeight;
+
+          ctx.setFillStyle('#4a90e2');
+          ctx.fillRect(boxLeft, boxTop, boxWidth, headerHeight);
+
+          ctx.setFillStyle('rgba(0, 0, 0, 0.45)');
+          ctx.fillRect(boxLeft, boxTop + headerHeight, boxWidth, contentHeight);
+
+          ctx.setFillStyle('#f5a623');
+          ctx.beginPath();
+          ctx.arc(boxLeft + 30 * scale, boxTop + headerHeight / 2, 12 * scale, 0, 2 * Math.PI);
+          ctx.fill();
+
+          ctx.setFillStyle('#ffffff');
+          ctx.setFontSize(36 * scale);
+          ctx.setTextBaseline('middle');
+          ctx.fillText(this.formData.maintainType || '设备维护', boxLeft + 60 * scale, boxTop + headerHeight / 2);
+
+          ctx.setFontSize(fontSize);
+          ctx.setTextBaseline('top');
+          texts.forEach((text, i) => {
+            ctx.fillText(text, boxLeft + 20 * scale, boxTop + headerHeight + 20 * scale + i * lineHeight);
+          });
+
+          if (localQrcode) {
+            const qrSize = 200 * scale;
+            const qrTop = padding;
+            const qrLeft = width - padding - qrSize;
+            
+            ctx.setFillStyle('#ffffff');
+            ctx.fillRect(qrLeft - 10 * scale, qrTop - 10 * scale, qrSize + 20 * scale, qrSize + 20 * scale);
+            ctx.drawImage(localQrcode, qrLeft, qrTop, qrSize, qrSize);
+
+            ctx.setFillStyle('#ffffff');
+            ctx.setFontSize(30 * scale);
+            ctx.setTextAlign('center');
+            ctx.setShadow(0, 0, 5, '#000000');
+            ctx.fillText('验真/导航', qrLeft + qrSize / 2, qrTop + qrSize + 40 * scale);
+            ctx.setShadow(0, 0, 0, 'transparent');
+            ctx.setTextAlign('left');
+          }
+
+          ctx.setFillStyle('rgba(255, 255, 255, 0.5)');
+          ctx.setFontSize(80 * scale);
+          ctx.setTextAlign('center');
+          ctx.setTextBaseline('middle');
+          ctx.fillText('二维码原图', width / 2, height / 2);
+
+          ctx.setFillStyle('#ffffff');
+          ctx.setFontSize(32 * scale);
+          ctx.setTextAlign('right');
+          ctx.setTextBaseline('bottom');
+          ctx.setShadow(0, 0, 5, '#000000');
+          ctx.fillText('今日水印', width - padding, height - padding - 45 * scale);
+          ctx.setFontSize(26 * scale);
+          ctx.fillText('相机 真实可验', width - padding, height - padding);
+          ctx.setShadow(0, 0, 0, 'transparent');
+          ctx.setTextAlign('left');
+          ctx.setTextBaseline('top');
+
+          ctx.draw(false, () => {
+            setTimeout(() => {
+              uni.canvasToTempFilePath({
+                canvasId: 'watermarkCanvas',
+                width,
+                height,
+                destWidth: width,
+                destHeight: height,
+                fileType: 'jpg',
+                quality: 0.92,
+                success: (res) => {
+                  this.photoList.push(res.tempFilePath);
+                  this.photoMetaList.push({ lat: snapLat, lng: snapLng });
+                  this.showCamera = false;
+                  uni.hideLoading();
+                  uni.showToast({ title: '拍照成功', icon: 'success' });
+                  resolveDraw();
+                },
+                fail: () => {
+                  uni.hideLoading();
+                  uni.showToast({ title: '保存图片失败', icon: 'none' });
+                  resolveDraw();
+                }
+              }, this);
+            }, 320);
+          });
+        });
+      } catch (e) {
+        void e;
+        uni.hideLoading();
+        uni.showToast({ title: '水印处理失败', icon: 'none' });
+        this.photoList.push(imagePath);
+        this.photoMetaList.push({ lat: snapLat, lng: snapLng });
+        this.showCamera = false;
+      }
+    },
     removePhoto(index) {
       this.photoList.splice(index, 1);
+      this.photoMetaList.splice(index, 1);
     },
     previewImage(index) {
+      const urls = this.photoList;
+      if (!urls.length) return;
       uni.previewImage({
-        current: index,
-        urls: this.photoList
+        current: urls[index],
+        urls,
+        showmenu: true
       });
     },
-    onQrcodeLongPress() {
-      const navUrl = `https://uri.amap.com/marker?position=${this.deviceLng},${this.deviceLat}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
-      uni.setClipboardData({
-        data: navUrl,
-        success: () => {
-          uni.showModal({
-            title: '导航信息',
-            content: `设备"${this.deviceName}"位于${this.deviceAddr}\n经度: ${this.deviceLng}\n纬度: ${this.deviceLat}\n\n导航链接已复制到剪贴板，可粘贴到浏览器打开导航`,
-            showCancel: true,
-            cancelText: '取消',
-            confirmText: '打开导航',
-            success: (res) => {
-              if (res.confirm) {
-                uni.openLocation({
-                  latitude: this.deviceLat,
-                  longitude: this.deviceLng,
-                  name: this.deviceName,
-                  address: this.deviceAddr,
-                  scale: 18
-                });
-              }
-            }
-          });
+    openNavModal(lat, lng) {
+      const la = Number.isFinite(Number(lat)) ? Number(lat) : this.watermarkLat;
+      const ln = Number.isFinite(Number(lng)) ? Number(lng) : this.watermarkLng;
+      const navUrl = `https://uri.amap.com/marker?position=${ln},${la}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
+      uni.showModal({
+        title: '导航到这里',
+        content: `拍摄地点：${this.deviceAddr}\n经度：${ln.toFixed(6)}°E\n纬度：${la.toFixed(6)}°N\n\n是否调起系统地图导航？`,
+        showCancel: true,
+        cancelText: '取消',
+        confirmText: '导航到这里',
+        success: (res) => {
+          if (res.confirm) {
+            uni.openLocation({
+              latitude: la,
+              longitude: ln,
+              name: this.deviceName || '维保位置',
+              address: this.deviceAddr,
+              scale: 18
+            });
+          }
         }
       });
+      uni.setClipboardData({ data: navUrl });
+    },
+    onQrcodeLongPress() {
+      this.openNavModal();
+    },
+    onPhotoLongPress(index) {
+      const meta = this.photoMetaList[index];
+      if (meta && Number.isFinite(meta.lat) && Number.isFinite(meta.lng)) {
+        this.openNavModal(meta.lat, meta.lng);
+      } else {
+        this.openNavModal();
+      }
     },
     submitMaintenance() {
       if (!this.formData.content) {

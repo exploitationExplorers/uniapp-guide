@@ -85,9 +85,9 @@ export default {
         },
         fail: () => {
           // 在PC微信开发者工具或未授权时，模拟一个定位
-          this.longitude = 120.604984;
-          this.latitude = 30.934464;
-          this.locationText = `经度:120.6050, 纬度:30.9345 (模拟)`;
+          // this.longitude = 120.604984;
+          // this.latitude = 30.934464;
+          // this.locationText = `经度:120.6050, 纬度:30.9345 (模拟)`;
           this.getNearbyEquipments();
         }
       });
