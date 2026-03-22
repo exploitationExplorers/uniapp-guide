@@ -83,6 +83,14 @@
 				"navigationBarBackgroundColor": "#1890ff",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path": "pages/qrVerify/index",
+			"style": {
+				"navigationBarTitleText": "验真/导航",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"uniIdRouter": {

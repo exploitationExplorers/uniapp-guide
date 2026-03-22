@@ -324,6 +324,7 @@ export default {
           const boxBottom = height - padding;
           const boxTop = boxBottom - totalHeight;
 
+          // ---- 左下角信息区 ----
           ctx.setFillStyle('#4a90e2');
           ctx.fillRect(boxLeft, boxTop, boxWidth, headerHeight);
 
@@ -346,38 +347,49 @@ export default {
             ctx.fillText(text, boxLeft + 20 * scale, boxTop + headerHeight + 20 * scale + i * lineHeight);
           });
 
-          if (localQrcode) {
-            const qrSize = 200 * scale;
-            const qrTop = padding;
-            const qrLeft = width - padding - qrSize;
-            
-            ctx.setFillStyle('#ffffff');
-            ctx.fillRect(qrLeft - 10 * scale, qrTop - 10 * scale, qrSize + 20 * scale, qrSize + 20 * scale);
-            ctx.drawImage(localQrcode, qrLeft, qrTop, qrSize, qrSize);
+          // ---- 右上角：二维码 + 地图截图区 ----
+          const qrSize = 180 * scale;
+          const mapW = 260 * scale;
+          const mapH = 200 * scale;
+          const blockRight = width - padding;
+          const blockTop = padding;
 
-            ctx.setFillStyle('#ffffff');
-            ctx.setFontSize(30 * scale);
-            ctx.setTextAlign('center');
-            ctx.setShadow(0, 0, 5, '#000000');
-            ctx.fillText('验真/导航', qrLeft + qrSize / 2, qrTop + qrSize + 40 * scale);
-            ctx.setShadow(0, 0, 0, 'transparent');
-            ctx.setTextAlign('left');
+          // 二维码白底 + 图片
+          const qrLeft = blockRight - qrSize;
+          ctx.setFillStyle('#ffffff');
+          ctx.fillRect(qrLeft - 10 * scale, blockTop - 10 * scale, qrSize + 20 * scale, qrSize + 20 * scale);
+          if (localQrcode) {
+            ctx.drawImage(localQrcode, qrLeft, blockTop, qrSize, qrSize);
           }
 
-          ctx.setFillStyle('rgba(255, 255, 255, 0.5)');
-          ctx.setFontSize(80 * scale);
-          ctx.setTextAlign('center');
-          ctx.setTextBaseline('middle');
-          ctx.fillText('二维码原图', width / 2, height / 2);
+          // 地图区域（灰底模拟，因 canvas 无法截取 map 组件）
+          const mapTop = blockTop + qrSize + 30 * scale;
+          const mapLeft = blockRight - mapW;
+          ctx.setFillStyle('#e8edf3');
+          ctx.fillRect(mapLeft, mapTop, mapW, mapH);
+          ctx.setStrokeStyle('rgba(255,255,255,0.6)');
+          ctx.setLineWidth(2 * scale);
+          ctx.strokeRect(mapLeft, mapTop, mapW, mapH);
 
+          // 地图上标注点
+          const pinX = mapLeft + mapW / 2;
+          const pinY = mapTop + mapH / 2 - 15 * scale;
+          ctx.setFillStyle('#e74c3c');
+          ctx.beginPath();
+          ctx.arc(pinX, pinY, 12 * scale, 0, 2 * Math.PI);
+          ctx.fill();
           ctx.setFillStyle('#ffffff');
-          ctx.setFontSize(32 * scale);
-          ctx.setTextAlign('right');
-          ctx.setTextBaseline('bottom');
-          ctx.setShadow(0, 0, 5, '#000000');
-          ctx.fillText('今日水印', width - padding, height - padding - 45 * scale);
+          ctx.beginPath();
+          ctx.arc(pinX, pinY, 5 * scale, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // "验真/导航" 文字
+          ctx.setFillStyle('#ffffff');
           ctx.setFontSize(26 * scale);
-          ctx.fillText('相机 真实可验', width - padding, height - padding);
+          ctx.setTextAlign('center');
+          ctx.setTextBaseline('top');
+          ctx.setShadow(1 * scale, 1 * scale, 4 * scale, 'rgba(0,0,0,0.6)');
+          ctx.fillText('验真/导航', mapLeft + mapW / 2, mapTop + mapH + 16 * scale);
           ctx.setShadow(0, 0, 0, 'transparent');
           ctx.setTextAlign('left');
           ctx.setTextBaseline('top');
@@ -431,39 +443,33 @@ export default {
         showmenu: true
       });
     },
-    openNavModal(lat, lng) {
+    goToVerifyPage(lat, lng, photoSrc) {
       const la = Number.isFinite(Number(lat)) ? Number(lat) : this.watermarkLat;
       const ln = Number.isFinite(Number(lng)) ? Number(lng) : this.watermarkLng;
-      const navUrl = `https://uri.amap.com/marker?position=${ln},${la}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
-      uni.showModal({
-        title: '导航到这里',
-        content: `拍摄地点：${this.deviceAddr}\n经度：${ln.toFixed(6)}°E\n纬度：${la.toFixed(6)}°N\n\n是否调起系统地图导航？`,
-        showCancel: true,
-        cancelText: '取消',
-        confirmText: '导航到这里',
-        success: (res) => {
-          if (res.confirm) {
-            uni.openLocation({
-              latitude: la,
-              longitude: ln,
-              name: this.deviceName || '维保位置',
-              address: this.deviceAddr,
-              scale: 18
-            });
-          }
-        }
-      });
-      uni.setClipboardData({ data: navUrl });
+      const params = [
+        `lat=${la}`,
+        `lng=${ln}`,
+        `addr=${encodeURIComponent(this.deviceAddr)}`,
+        `time=${encodeURIComponent(this.currentTime)}`,
+        `code=${encodeURIComponent(this.formData.content || this.deviceCode)}`,
+        `name=${encodeURIComponent(this.deviceName)}`,
+        `type=${encodeURIComponent(this.formData.maintainType || '设备维护')}`,
+        `bearing=${this.bearing}`,
+        `remark=${encodeURIComponent(this.formData.remark || '')}`,
+        `photo=${encodeURIComponent(photoSrc || '')}`
+      ].join('&');
+      uni.navigateTo({ url: `/pages/qrVerify/index?${params}` });
     },
     onQrcodeLongPress() {
-      this.openNavModal();
+      this.goToVerifyPage();
     },
     onPhotoLongPress(index) {
       const meta = this.photoMetaList[index];
+      const photo = this.photoList[index] || '';
       if (meta && Number.isFinite(meta.lat) && Number.isFinite(meta.lng)) {
-        this.openNavModal(meta.lat, meta.lng);
+        this.goToVerifyPage(meta.lat, meta.lng, photo);
       } else {
-        this.openNavModal();
+        this.goToVerifyPage(null, null, photo);
       }
     },
     submitMaintenance() {
