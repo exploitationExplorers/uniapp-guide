@@ -65,7 +65,7 @@ export default {
   onLoad() {
     const app = getApp();
     if (!app.globalData.token) {
-      uni.redirectTo({ url: '/pages/featureIntro/index' });
+      uni.reLaunch({ url: '/pages/login/index' });
       return;
     }
     this.getLocation();
@@ -76,6 +76,8 @@ export default {
       uni.getLocation({
         type: 'gcj02',
         success: (res) => {
+          console.log(res,'定位');
+          
           this.longitude = res.longitude;
           this.latitude = res.latitude;
           this.locationText = `经度:${res.longitude.toFixed(4)}, 纬度:${res.latitude.toFixed(4)}`;

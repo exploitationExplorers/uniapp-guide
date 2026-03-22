@@ -2,7 +2,9 @@
   <view class="login-container">
     <view class="header-bg">
       <view class="header-content">
-        <image class="logo" src="/static/logo.png" mode="aspectFit"></image>
+        <view class="logo">
+          <text class="logo-icon">🔧</text>
+        </view>
         <text class="title">设备维保管理系统</text>
         <text class="subtitle">专业 · 高效 · 智能</text>
       </view>
@@ -134,12 +136,19 @@ export default {
 }
 
 .logo {
-  width: 120rpx;
-  height: 120rpx;
-  background-color: #fff;
-  border-radius: 20rpx;
-  padding: 10rpx;
-  margin-bottom: 20rpx;
+  width: 140rpx;
+  height: 140rpx;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.logo-icon {
+  font-size: 72rpx;
 }
 
 .title {
