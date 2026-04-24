@@ -17,13 +17,13 @@
       </view>
       
       <scroll-view class="equipment-list" scroll-y>
-        <view class="equipment-item" v-for="(item, index) in nearbyEquipments" :key="index">
+        <view class="equipment-item" v-for="(item, index) in nearbyEquipments" :key="index" @click="goToFacilityDetail(item)">
           <view class="eq-info">
             <view class="eq-name">{{ item.name }} <text class="eq-code">({{ item.code }})</text></view>
             <view class="eq-dist">距离: {{ item.distance }}m</view>
             <view class="eq-addr">地址: {{ item.address }}</view>
           </view>
-          <button class="maintain-btn" size="mini" @click="goToMaintenance(item)">去维保</button>
+          <button class="maintain-btn" size="mini" @click.stop="goToMaintenance(item)">去维保</button>
         </view>
         <view v-if="nearbyEquipments.length === 0" class="empty-tip">暂无附近设备</view>
       </scroll-view>
@@ -36,12 +36,12 @@
         <button class="search-btn" size="mini" @click="searchEquipment">查询</button>
       </view>
       
-      <view class="equipment-item mt-20" v-if="searchedEquipment">
+      <view class="equipment-item mt-20" v-if="searchedEquipment" @click="goToFacilityDetail(searchedEquipment)">
         <view class="eq-info">
           <view class="eq-name">{{ searchedEquipment.name }} <text class="eq-code">({{ searchedEquipment.code }})</text></view>
           <view class="eq-addr">地址: {{ searchedEquipment.address }}</view>
         </view>
-        <button class="maintain-btn" size="mini" @click="goToMaintenance(searchedEquipment)">去维保</button>
+        <button class="maintain-btn" size="mini" @click.stop="goToMaintenance(searchedEquipment)">去维保</button>
       </view>
       <view v-else-if="hasSearched" class="empty-tip">未找到相关设备</view>
     </view>
@@ -115,6 +115,11 @@ export default {
     goToMaintenance(item) {
       uni.navigateTo({
         url: `/pages/maintenance/index?id=${item.id}&code=${item.code}&name=${item.name}&lat=${item.lat}&lng=${item.lng}&addr=${item.address}`
+      });
+    },
+    goToFacilityDetail(item) {
+      uni.navigateTo({
+        url: `/pages/facilityDetail/index?code=${encodeURIComponent(item.code || '')}&name=${encodeURIComponent(item.name || '')}`
       });
     }
   }

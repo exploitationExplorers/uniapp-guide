@@ -91,6 +91,22 @@
 				"navigationBarBackgroundColor": "#1890ff",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path": "pages/facilityDetail/index",
+			"style": {
+				"navigationBarTitleText": "设施详情",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/maintenanceRecord/index",
+			"style": {
+				"navigationBarTitleText": "井盖维护记录",
+				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"uniIdRouter": {
