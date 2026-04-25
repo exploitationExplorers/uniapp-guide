@@ -1,5 +1,5 @@
 /**
- * 扫码进维保：解析内容、组 URL。首页「去维保」也使用 buildMaintenanceUrl。
+ * ???????????? URL??????????? buildMaintenanceUrl?
  */
 
 function formatScanTime(date = new Date()) {
@@ -63,11 +63,11 @@ function buildMaintenanceUrl(item = {}, extraParams = {}) {
     .map((key) => `${key}=${encodeURIComponent(params[key])}`)
     .join('&');
 
-  return `/pages/maintenance/index${query ? `?${query}` : ''}`;
+  return `/subpkg/maintenance/index${query ? `?${query}` : ''}`;
 }
 
 /**
- * 调起系统扫码，成功后跳转维保。成功跳转前会 set skipNextScanOnShow，从维保页返回时不再立刻二次弹扫。
+ * ????????????????????? set skipNextScanOnShow?????????????????
  */
 function scanToMaintenance() {
   return new Promise((resolve) => {
@@ -77,7 +77,7 @@ function scanToMaintenance() {
       success: (res) => {
         const deviceCode = normalizeScanCode(res.result);
         if (!deviceCode) {
-          uni.showToast({ title: '未识别到消火栓编号', icon: 'none' });
+          uni.showToast({ title: '?????????', icon: 'none' });
           resolve(false);
           return;
         }
@@ -92,7 +92,7 @@ function scanToMaintenance() {
           resolve(false);
           return;
         }
-        uni.showToast({ title: '扫码失败，请重试', icon: 'none' });
+        uni.showToast({ title: '????????', icon: 'none' });
         resolve(false);
       }
     });

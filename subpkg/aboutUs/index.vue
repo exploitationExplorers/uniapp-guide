@@ -73,7 +73,7 @@ export default {
 				success: (res) => {
 					if (res.confirm) {
 						uni.navigateTo({
-							url: '/pages/login/index'
+							url: '/subpkg/login/index'
 						})
 					}
 				}

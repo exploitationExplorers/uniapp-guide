@@ -182,7 +182,7 @@ export default {
   methods: {
     goToForm(type) {
       if (type === 'daily') {
-        uni.navigateTo({ url: '/pages/maintenanceRecord/index' });
+        uni.navigateTo({ url: '/subpkg/maintenanceRecord/index' });
       } else {
         const labels = {
           repair: '报修登记',

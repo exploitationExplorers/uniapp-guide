@@ -40,10 +40,10 @@ export default {
       userName: '',
       timePeriod: '',
       menuList: [
-        { icon: '👤', name: '个人资料', url: '/pages/personalProfile/index' },
+        { icon: '👤', name: '个人资料', url: '/subpkg/personalProfile/index' },
         { icon: '📋', name: '维保记录', url: '' },
-        { icon: '🔧', name: '修改密码', url: '/pages/changePassword/index' },
-        { icon: 'ℹ️', name: '关于系统', url: '/pages/aboutUs/index' }
+        { icon: '🔧', name: '修改密码', url: '/subpkg/changePassword/index' },
+        // { icon: 'ℹ️', name: '关于系统', url: '/subpkg/aboutUs/index' }
       ]
     }
   },
@@ -79,7 +79,7 @@ export default {
       uni.navigateTo({
         url: item.url,
         fail: () => {
-          uni.navigateTo({ url: '/pages/404/404' });
+          uni.navigateTo({ url: '/subpkg/404/404' });
         }
       });
     },
@@ -92,7 +92,7 @@ export default {
             const app = getApp();
             app.globalData.userInfo = null;
             app.globalData.token = '';
-            uni.reLaunch({ url: '/pages/login/index' });
+            uni.reLaunch({ url: '/subpkg/login/index' });
           }
         }
       });

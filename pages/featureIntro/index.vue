@@ -51,7 +51,7 @@ export default {
   },
   methods: {
     handleStart() {
-      uni.navigateTo({ url: '/pages/login/index' });
+      uni.navigateTo({ url: '/subpkg/login/index' });
     }
   }
 }

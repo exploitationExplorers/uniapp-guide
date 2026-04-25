@@ -1,5 +1,6 @@
 {
-	"pages": [		{
+	"pages": [
+		{
 			"path": "pages/index/index",
 			"style": {
 				"enablePullDownRefresh": false,
@@ -22,104 +23,104 @@
 			"style": {
 				"navigationBarTitleText": ""
 			}
-		},
+		}
+	],
+	"subPackages": [
 		{
-			"path": "pages/404/404",
-			"style": {
-				"navigationBarTitleText": "页面不存在"
-			}
-		},
-		{
-			"path": "pages/personalProfile/index",
-			"style": {
-				"navigationBarTitleText": "个人资料"
-			}
-		},
-		
-		// {
-		// 	"path": "pages/aboutUs/index",
-		// 	"style": {
-		// 		"navigationBarTitleText": "关于",
-		// 		"navigationBarTextStyle": "white",
-		// 		"navigationBarBackgroundColor": "#29b6f6"
-		// 	}
-		// },
-		{
-			"path": "pages/takePhoto/index",
-			"style": {
-				"navigationBarTitleText": ""
-			}
-		},
-		{
-			"path": "pages/login/index",
-			"style": {
-				"navigationBarTitleText": "设备维保系统",
-				"navigationBarBackgroundColor": "#1890ff",
-				"navigationBarTextStyle": "white",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/register/index",
-			"style": {
-				"navigationBarTitleText": "注册"
-			}
-		},
-		{
-			"path": "pages/forgetPwd/index",
-			"style": {
-				"navigationBarTitleText": "忘记密码"
-			}
-		},
-		// {
-		// 	"path": "pages/featureIntro/index",
-		// 	"style": {
-		// 		"navigationBarTitleText": "功能介绍"
-		// 	}
-		// },
-		{
-			"path": "pages/changePassword/index",
-			"style": {
-				"navigationBarTitleText": "修改密码",
-				"navigationBarBackgroundColor": "#1296DB",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/maintenance/index",
-			"style": {
-				"navigationBarTitleText": "设备维保",
-				"navigationBarBackgroundColor": "#1890ff",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/qrVerify/index",
-			"style": {
-				"navigationBarTitleText": "验真/导航",
-				"navigationBarBackgroundColor": "#1890ff",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/facilityDetail/index",
-			"style": {
-				"navigationBarTitleText": "设施详情",
-				"navigationBarBackgroundColor": "#1890ff",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/maintenanceRecord/index",
-			"style": {
-				"navigationBarTitleText": "井盖维护记录",
-				"navigationBarBackgroundColor": "#1890ff",
-				"navigationBarTextStyle": "white"
-			}
+			"root": "subpkg",
+			"pages": [
+				{
+					"path": "404/404",
+					"style": {
+						"navigationBarTitleText": "页面不存在"
+					}
+				},
+				{
+					"path": "personalProfile/index",
+					"style": {
+						"navigationBarTitleText": "个人资料"
+					}
+				},
+				{
+					"path": "takePhoto/index",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "login/index",
+					"style": {
+						"navigationBarTitleText": "设备维保系统",
+						"navigationBarBackgroundColor": "#1890ff",
+						"navigationBarTextStyle": "white",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "register/index",
+					"style": {
+						"navigationBarTitleText": "注册"
+					}
+				},
+				{
+					"path": "forgetPwd/index",
+					"style": {
+						"navigationBarTitleText": "忘记密码"
+					}
+				},
+				{
+					"path": "changePassword/index",
+					"style": {
+						"navigationBarTitleText": "修改密码",
+						"navigationBarBackgroundColor": "#1296DB",
+						"navigationBarTextStyle": "white"
+					}
+				},
+				{
+					"path": "maintenance/index",
+					"style": {
+						"navigationBarTitleText": "设备维保",
+						"navigationBarBackgroundColor": "#1890ff",
+						"navigationBarTextStyle": "white"
+					}
+				},
+				{
+					"path": "qrVerify/index",
+					"style": {
+						"navigationBarTitleText": "验真/导航",
+						"navigationBarBackgroundColor": "#1890ff",
+						"navigationBarTextStyle": "white"
+					}
+				},
+				{
+					"path": "facilityDetail/index",
+					"style": {
+						"navigationBarTitleText": "设施详情",
+						"navigationBarBackgroundColor": "#1890ff",
+						"navigationBarTextStyle": "white"
+					}
+				},
+				{
+					"path": "maintenanceRecord/index",
+					"style": {
+						"navigationBarTitleText": "井盖维护记录",
+						"navigationBarBackgroundColor": "#1890ff",
+						"navigationBarTextStyle": "white"
+					}
+				},
+				{
+					"path": "aboutUs/index",
+					"style": {
+						"navigationBarTitleText": "关于",
+						"navigationBarTextStyle": "white",
+						"navigationBarBackgroundColor": "#29b6f6"
+					}
+				}
+			]
 		}
 	],
 	"uniIdRouter": {
-		"notFound": "pages/404/404"
+		"notFound": "subpkg/404/404"
 	},
 	"tabBar": {
 		"color": "#999999",
@@ -130,20 +131,20 @@
 			{
 				"pagePath": "pages/index/index",
 				"text": "设备维保",
-				"iconPath": "/static/home.png",
-				"selectedIconPath": "/static/home.png"
+				"iconPath": "/static/tab-home.png",
+				"selectedIconPath": "/static/tab-home-active.png"
 			},
 			{
 				"pagePath": "pages/scan/index",
-				"text": "扫码",
+				"text": "",
 				"iconPath": "/static/tab-scan.png",
 				"selectedIconPath": "/static/tab-scan-active.png"
 			},
 			{
 				"pagePath": "pages/personalCenter/index",
 				"text": "我的",
-				"iconPath": "/static/personalCenter.png",
-				"selectedIconPath": "/static/personalCenter.png"
+				"iconPath": "/static/tab-user.png",
+				"selectedIconPath": "/static/tab-user-active.png"
 			}
 		]
 	},

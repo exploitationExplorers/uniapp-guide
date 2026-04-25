@@ -610,7 +610,7 @@ export default {
         `remark=${encodeURIComponent(this.formData.remark || '')}`,
         photoSrc ? 'photoCached=1' : 'photoCached=0'
       ].join('&');
-      uni.navigateTo({ url: `/pages/qrVerify/index?${params}` });
+      uni.navigateTo({ url: `/subpkg/qrVerify/index?${params}` });
     },
     submitMaintenance() {
       if (!this.formData.content) {

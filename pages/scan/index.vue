@@ -16,7 +16,7 @@ export default {
   onLoad() {
     const app = getApp();
     if (!app.globalData.token) {
-      uni.reLaunch({ url: '/pages/login/index' });
+      uni.reLaunch({ url: '/subpkg/login/index' });
     }
   },
   methods: {
