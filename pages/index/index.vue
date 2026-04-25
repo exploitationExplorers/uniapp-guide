@@ -1,7 +1,8 @@
 <template>
   <view class="container">
+    <app-nav-bar title="设备维保" background-color="#1890ff" />
     <view class="header">
-      <text class="title">选择维保设备</text>
+      <text class="header-title">选择维保设备</text>
     </view>
     
     <view class="tab-box">
@@ -45,10 +46,13 @@
       </view>
       <view v-else-if="hasSearched" class="empty-tip">未找到相关设备</view>
     </view>
+
   </view>
 </template>
 
 <script>
+import { buildMaintenanceUrl } from '../../utils/scanMaintenance.js';
+
 export default {
   data() {
     return {
@@ -76,8 +80,6 @@ export default {
       uni.getLocation({
         type: 'gcj02',
         success: (res) => {
-          console.log(res,'定位');
-          
           this.longitude = res.longitude;
           this.latitude = res.latitude;
           this.locationText = `经度:${res.longitude.toFixed(4)}, 纬度:${res.latitude.toFixed(4)}`;
@@ -114,7 +116,7 @@ export default {
     },
     goToMaintenance(item) {
       uni.navigateTo({
-        url: `/pages/maintenance/index?id=${item.id}&code=${item.code}&name=${item.name}&lat=${item.lat}&lng=${item.lng}&addr=${item.address}`
+        url: buildMaintenanceUrl(item)
       });
     },
     goToFacilityDetail(item) {
@@ -132,14 +134,15 @@ export default {
   background-color: #f5f7fa;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .header {
   background-color: #1890ff;
-  padding: 40rpx 30rpx 60rpx;
+  padding: 24rpx 30rpx 60rpx;
 }
 
-.title {
+.header-title {
   color: #fff;
   font-size: 40rpx;
   font-weight: bold;

@@ -3,9 +3,10 @@
     <!-- 设备信息 -->
     <view class="section device-card">
       <view class="section-title">设备信息</view>
-      <view class="info-row"><text class="label">设备名称：</text><text>{{ deviceName }}</text></view>
-      <view class="info-row"><text class="label">设备编号：</text><text>{{ deviceCode }}</text></view>
-      <view class="info-row"><text class="label">设备地址：</text><text>{{ deviceAddr }}</text></view>
+      <view class="info-row"><text class="label">设备名称：</text><text class="info-value">{{ displayText(deviceName) }}</text></view>
+      <view class="info-row"><text class="label">设备编号：</text><text class="info-value">{{ displayText(deviceCode) }}</text></view>
+      <view class="info-row"><text class="label">设备地址：</text><text class="info-value">{{ displayText(deviceAddr) }}</text></view>
+      <view class="info-row"><text class="label">扫码时间：</text><text class="info-value">{{ displayText(scanTime) }}</text></view>
     </view>
 
     <!-- 维保内容 -->
@@ -74,7 +75,7 @@
             <text class="wm-line">施工内容：{{ formData.content || deviceCode }}</text>
             <text class="wm-line">备注：{{ formData.remark || '无' }}</text>
             <text class="wm-line">拍摄时间：{{ currentTime }}</text>
-            <text class="wm-line">地点：{{ deviceAddr }}</text>
+            <text class="wm-line">地点：{{ displayText(deviceAddr) }}</text>
             <text class="wm-line">经度：{{ formatLng(watermarkLng) }}</text>
             <text class="wm-line">纬度：{{ formatLat(watermarkLat) }}</text>
             <text class="wm-line">方位角：西{{ bearing }}°</text>
@@ -134,6 +135,7 @@ export default {
       deviceName: '',
       deviceCode: '',
       deviceAddr: '',
+      scanTime: '',
       deviceLat: 0,
       deviceLng: 0,
       /** 拍照水印/二维码使用的实时经纬度（uni.getLocation） */
@@ -166,6 +168,7 @@ export default {
     this.deviceName = decodeURIComponent(options.name || '');
     this.deviceCode = decodeURIComponent(options.code || '');
     this.deviceAddr = decodeURIComponent(options.addr || '');
+    this.scanTime = this.normalizeScanTime(decodeURIComponent(options.scanTime || ''));
     this.deviceLat = Number(options.lat) || 0;
     this.deviceLng = Number(options.lng) || 0;
     this.watermarkLat = this.deviceLat;
@@ -178,6 +181,30 @@ export default {
     this.cameraCtx = uni.createCameraContext();
   },
   methods: {
+    displayText(value) {
+      const text = String(value || '').trim();
+      return text || '--';
+    },
+    normalizeScanTime(value) {
+      const text = String(value || '').trim();
+      if (!text) return '';
+      if (/^\d{13}$/.test(text)) {
+        return this.formatFullTime(new Date(Number(text)));
+      }
+      if (/^\d{10}$/.test(text)) {
+        return this.formatFullTime(new Date(Number(text) * 1000));
+      }
+      return text.replace(/T/g, ' ').replace(/\//g, '.');
+    },
+    formatFullTime(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const h = String(date.getHours()).padStart(2, '0');
+      const mi = String(date.getMinutes()).padStart(2, '0');
+      const s = String(date.getSeconds()).padStart(2, '0');
+      return `${y}.${m}.${d} ${h}:${mi}:${s}`;
+    },
     formatLat(lat) {
       const n = Number(lat);
       return Number.isFinite(n) ? `${n.toFixed(6)}°N` : '--';
@@ -230,7 +257,10 @@ export default {
     generateQrcode() {
       const lat = this.watermarkLat;
       const lng = this.watermarkLng;
-      const navUrl = `https://uri.amap.com/marker?position=${lng},${lat}&name=${encodeURIComponent(this.deviceName)}&coordinate=gaode&callnative=1`;
+      const deviceTitle = this.deviceName || this.deviceCode || '设备维保';
+      const codeParam = (this.deviceCode || '').trim();
+      // 与扫码页 normalizeScanCode 一致：query 中携带 hydrantCode，现场扫印刷/电子合成图可解析出消火栓编号
+      const navUrl = `https://uri.amap.com/marker?position=${lng},${lat}&name=${encodeURIComponent(deviceTitle)}&coordinate=gaode&callnative=1${codeParam ? `&hydrantCode=${encodeURIComponent(codeParam)}` : ''}`;
       this.qrcodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(navUrl)}`;
     },
     updateTime() {
@@ -378,7 +408,7 @@ export default {
             `施工内容：${this.formData.content || this.deviceCode}`,
             `备注：${this.formData.remark || '无'}`,
             `拍摄时间：${this.currentTime}`,
-            `地点：${this.deviceAddr}`,
+            `地点：${this.displayText(this.deviceAddr)}`,
             `经度：${lngStr}°E`,
             `纬度：${latStr}°N`,
             `方位角：西${this.bearing}°`
@@ -425,25 +455,38 @@ export default {
             lineY += lineSpacing;
           });
 
-          // ---- 右上角：与 .wm-top-right 一致（二维码在上、地图在下、底部验真/导航）----
+          // ---- 右上角：与 .wm-top-right 一致（二维码+下方消火栓编号、地图、底部验真/导航）----
           const qrSize = 120 * rpx;
           const mapW = 200 * rpx;
           const mapH = 160 * rpx;
           const gapQrMap = 12 * rpx;
           const gapMapHint = 8 * rpx;
+          const qrIdGap = 10 * rpx;
+          const qrIdLineH = 26 * rpx;
+          const qrIdFont = 20 * rpx;
+          const qrCardPad = 4 * rpx;
+          const hydrantIdText = (this.deviceCode || '').trim() || '--';
 
           const mapLeft = width - edge - mapW;
           const qrLeft = mapLeft + (mapW - qrSize) / 2;
           const qrTop = edge;
-          const mapTop = qrTop + qrSize + gapQrMap;
+          const qrCardTop = qrTop - qrCardPad;
+          const qrCardH = 2 * qrCardPad + qrSize + qrIdGap + qrIdLineH;
+          const mapTop = qrCardTop + qrCardH + gapQrMap;
 
           ctx.setFillStyle('#ffffff');
-          fillRoundRect(ctx, qrLeft - 4 * rpx, qrTop - 4 * rpx, qrSize + 8 * rpx, qrSize + 8 * rpx, 8 * rpx, '#ffffff');
+          fillRoundRect(ctx, qrLeft - qrCardPad, qrCardTop, qrSize + 2 * qrCardPad, qrCardH, 8 * rpx, '#ffffff');
           if (localQrcode) {
             ctx.drawImage(localQrcode, qrLeft, qrTop, qrSize, qrSize);
           } else {
             drawPlaceholderQr(ctx, qrLeft, qrTop, qrSize);
           }
+          ctx.setFillStyle('#1a1a1a');
+          ctx.setFontSize(qrIdFont);
+          ctx.setTextAlign('center');
+          ctx.setTextBaseline('middle');
+          ctx.fillText(hydrantIdText, qrLeft + qrSize / 2, qrTop + qrSize + qrIdGap + qrIdLineH / 2);
+          ctx.setTextAlign('left');
 
           const brandH = 28 * rpx;
           const mapTileH = mapH - brandH;
@@ -581,9 +624,10 @@ export default {
       // 模拟提交
       setTimeout(() => {
         this.submitting = false;
+        const submitDeviceCode = this.deviceCode || this.formData.content || '--';
         uni.showModal({
           title: '提交成功',
-          content: `设备 ${this.deviceCode} 维保记录已上传`,
+          content: `设备 ${submitDeviceCode} 维保记录已上传`,
           showCancel: false,
           success: () => {
             uni.navigateBack();
@@ -629,12 +673,18 @@ export default {
   padding: 10rpx 0;
   font-size: 28rpx;
   color: #333;
+  align-items: flex-start;
 }
 
 .label {
   color: #888;
   width: 170rpx;
   flex-shrink: 0;
+}
+
+.info-value {
+  flex: 1;
+  word-break: break-all;
 }
 
 .form-item {

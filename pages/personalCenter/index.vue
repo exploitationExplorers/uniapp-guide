@@ -105,6 +105,7 @@ export default {
 .page {
   min-height: 100vh;
   background-color: #f4f6f8;
+  box-sizing: border-box;
 }
 
 .user-card {

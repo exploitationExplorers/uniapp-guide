@@ -5,6 +5,15 @@
 				"enablePullDownRefresh": false,
 				"navigationBarTitleText": "设备维保",
 				"navigationBarBackgroundColor": "#1890ff",
+				"navigationBarTextStyle": "white",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/scan/index",
+			"style": {
+				"navigationBarTitleText": "扫码维保",
+				"navigationBarBackgroundColor": "#1890ff",
 				"navigationBarTextStyle": "white"
 			}
 		},
@@ -117,11 +126,18 @@
 		"selectedColor": "#1890ff",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
-		"list": [{
+		"list": [
+			{
 				"pagePath": "pages/index/index",
 				"text": "设备维保",
 				"iconPath": "/static/home.png",
 				"selectedIconPath": "/static/home.png"
+			},
+			{
+				"pagePath": "pages/scan/index",
+				"text": "扫码",
+				"iconPath": "/static/tab-scan.png",
+				"selectedIconPath": "/static/tab-scan-active.png"
 			},
 			{
 				"pagePath": "pages/personalCenter/index",
